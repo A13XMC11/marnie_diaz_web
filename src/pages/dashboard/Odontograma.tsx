@@ -31,7 +31,7 @@ export default function Odontograma() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    supabase.from('pacientes').select('id, nombre, apellido').order('apellido').then(({data}) => setPacientes(data ?? []))
+    supabase.from('pacientes').select('id, nombre, apellido').order('apellido').then(({data}: {data: Paciente[] | null}) => setPacientes(data ?? []))
   }, [])
 
   const fetchOdontograma = useCallback(async (pid: string) => {
