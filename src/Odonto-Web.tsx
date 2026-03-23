@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const WA_1 = "https://wa.me/593998862001";
 const WA_2 = "https://wa.me/593998826201";
@@ -213,7 +214,12 @@ export default function MarnieDiaz() {
             <li key={s}><a href={`#${s}`}>{s.replace("-"," ")}</a></li>
           ))}
         </ul>
-        <a className="md-nav-cta" href={WA_1} target="_blank" rel="noreferrer">Reservar cita</a>
+        <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
+          <Link to="/login" style={{fontSize:".8rem",fontWeight:500,color:"var(--muted)",textDecoration:"none",padding:".5rem .9rem",borderRadius:"50px",border:"1.5px solid rgba(74,168,222,.3)",transition:"all .2s",whiteSpace:"nowrap"}} onMouseEnter={e=>(e.currentTarget.style.color="var(--azure)")} onMouseLeave={e=>(e.currentTarget.style.color="var(--muted)")}>
+            🔐 Iniciar sesión
+          </Link>
+          <a className="md-nav-cta" href={WA_1} target="_blank" rel="noreferrer">Reservar cita</a>
+        </div>
         <button className="md-hamburger" onClick={() => setMenuOpen(o => !o)}>
           <span/><span/><span/>
         </button>
@@ -224,6 +230,9 @@ export default function MarnieDiaz() {
           {["servicios","sobre-mi","galeria","testimonios","contacto"].map(s => (
             <a key={s} href={`#${s}`} onClick={closeMenu}>{s.replace("-"," ")}</a>
           ))}
+          <Link to="/login" style={{fontSize:".88rem",fontWeight:500,color:"var(--azure)",padding:".6rem 0",borderBottom:"1px solid var(--ice)",display:"block",textDecoration:"none"}} onClick={closeMenu}>
+            🔐 Iniciar sesión
+          </Link>
           <a className="md-mob-cta" href={WA_MSG} target="_blank" rel="noreferrer" onClick={closeMenu}>
             💬 Reservar por WhatsApp
           </a>

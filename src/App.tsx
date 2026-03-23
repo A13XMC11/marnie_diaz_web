@@ -1,5 +1,42 @@
+import { Routes, Route, Navigate } from 'react-router-dom'
 import MarnieDiaz from './Odonto-Web.jsx'
+import Login from './pages/Login'
+import ProtectedRoute from './components/ProtectedRoute'
+import DashboardLayout from './layouts/DashboardLayout'
+import Pacientes from './pages/dashboard/Pacientes'
+import PacienteDetalle from './pages/dashboard/PacienteDetalle'
+import Citas from './pages/dashboard/Citas'
+import Procedimientos from './pages/dashboard/Procedimientos'
+import Pagos from './pages/dashboard/Pagos'
+import Odontograma from './pages/dashboard/Odontograma'
 
 export default function App() {
-  return <MarnieDiaz />
+  return (
+    <Routes>
+      {/* Sitio público */}
+      <Route path="/" element={<MarnieDiaz />} />
+      <Route path="/login" element={<Login />} />
+
+      {/* Dashboard protegido */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="pacientes" replace />} />
+        <Route path="pacientes" element={<Pacientes />} />
+        <Route path="pacientes/:id" element={<PacienteDetalle />} />
+        <Route path="citas" element={<Citas />} />
+        <Route path="procedimientos" element={<Procedimientos />} />
+        <Route path="pagos" element={<Pagos />} />
+        <Route path="odontograma" element={<Odontograma />} />
+      </Route>
+
+      {/* Catch-all */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
 }

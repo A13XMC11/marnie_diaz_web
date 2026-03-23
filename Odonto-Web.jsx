@@ -209,20 +209,20 @@ export default function MarnieDiaz() {
       <nav className="md-nav">
         <a className="md-nav-logo" href="#inicio">Marnie Díaz <span>Odontología</span></a>
         <ul className="md-nav-links">
-          {["servicios","sobre-mi","galeria","testimonios","contacto"].map(s => (
-            <li key={s}><a href={`#${s}`}>{s.replace("-"," ")}</a></li>
+          {["servicios", "sobre-mi", "galeria", "testimonios", "contacto"].map(s => (
+            <li key={s}><a href={`#${s}`}>{s.replace("-", " ")}</a></li>
           ))}
         </ul>
         <a className="md-nav-cta" href={WA_1} target="_blank" rel="noreferrer">Reservar cita</a>
         <button className="md-hamburger" onClick={() => setMenuOpen(o => !o)}>
-          <span/><span/><span/>
+          <span /><span /><span />
         </button>
       </nav>
 
       {menuOpen && (
         <div className="md-mobile-menu">
-          {["servicios","sobre-mi","galeria","testimonios","contacto"].map(s => (
-            <a key={s} href={`#${s}`} onClick={closeMenu}>{s.replace("-"," ")}</a>
+          {["servicios", "sobre-mi", "galeria", "testimonios", "contacto"].map(s => (
+            <a key={s} href={`#${s}`} onClick={closeMenu}>{s.replace("-", " ")}</a>
           ))}
           <a className="md-mob-cta" href={WA_MSG} target="_blank" rel="noreferrer" onClick={closeMenu}>
             💬 Reservar por WhatsApp
@@ -232,18 +232,18 @@ export default function MarnieDiaz() {
 
       {/* HERO */}
       <section id="inicio" className="md-hero">
-        <div className="md-hero-bg"/>
-        <div className="md-hero-circle"/>
+        <div className="md-hero-bg" />
+        <div className="md-hero-circle" />
         <div className="md-hero-content">
           <div className="md-hero-tag">Odontología Estética · Quito, Ecuador</div>
-          <h1 className="md-hero-h1">Tu sonrisa,<br/>nuestra <em>obra maestra</em></h1>
+          <h1 className="md-hero-h1">Tu sonrisa,<br />nuestra <em>obra maestra</em></h1>
           <p className="md-hero-sub">Transformamos sonrisas con tratamientos estéticos y rehabilitación oral de última generación, con la calidez y atención personalizada que mereces.</p>
           <div className="md-hero-actions">
             <a className="md-btn-primary" href={WA_MSG} target="_blank" rel="noreferrer">💬 Reservar cita</a>
             <a className="md-btn-outline" href="#servicios">Ver servicios</a>
           </div>
           <div className="md-hero-stats">
-            {[["+ 500","Pacientes felices"],["10+","Años de experiencia"],["100%","Atención personalizada"]].map(([n,l]) => (
+            {[["+ 500", "Pacientes felices"], ["10+", "Años de experiencia"], ["100%", "Atención personalizada"]].map(([n, l]) => (
               <div key={l}><div className="md-stat-num">{n}</div><div className="md-stat-label">{l}</div></div>
             ))}
           </div>
@@ -251,7 +251,7 @@ export default function MarnieDiaz() {
         <div className="md-hero-img-col">
           <div className="md-hero-card">
             <div className="md-hero-card-img">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></svg>
               <span>📸 Foto de la Dra. Marnie Díaz</span>
             </div>
             <div className="md-hero-card-info">
@@ -270,13 +270,13 @@ export default function MarnieDiaz() {
         <p className="md-section-sub">Tratamientos integrales para cuidar tu salud bucal y transformar tu sonrisa con tecnología avanzada y trato humano.</p>
         <div className="md-servicios-grid">
           {[
-            ["✨","Odontología Estética","Diseño de sonrisa, carillas, blanqueamiento y rehabilitación oral para transformar tu imagen con resultados naturales y duraderos."],
-            ["🦷","Endodoncia","Tratamiento de conductos para salvar dientes comprometidos, eliminar el dolor y preservar tu dentición natural a largo plazo."],
-            ["🏥","Rehabilitación Oral","Restauración integral de la función y estética bucal mediante tratamientos avanzados y planes personalizados para cada paciente."],
-            ["😊","Prótesis Dentales","Prótesis totales y parciales de alta calidad para recuperar la masticación, la fonética y la confianza en tu sonrisa."],
-            ["🌿","Odontogeriatría","Atención odontológica especializada para adultos mayores, con el cuidado, paciencia y protocolo que cada etapa merece."],
-            ["💆","Armonía Facial","Tratamientos complementarios para el bienestar facial y general, logrando equilibrio entre salud bucal y armonía estética."],
-          ].map(([icon,title,desc]) => (
+            ["✨", "Odontología Estética", "Diseño de sonrisa, carillas, blanqueamiento y rehabilitación oral para transformar tu imagen con resultados naturales y duraderos."],
+            ["🦷", "Endodoncia", "Tratamiento de conductos para salvar dientes comprometidos, eliminar el dolor y preservar tu dentición natural a largo plazo."],
+            ["🏥", "Rehabilitación Oral", "Restauración integral de la función y estética bucal mediante tratamientos avanzados y planes personalizados para cada paciente."],
+            ["😊", "Prótesis Dentales", "Prótesis totales y parciales de alta calidad para recuperar la masticación, la fonética y la confianza en tu sonrisa."],
+            ["🌿", "Odontogeriatría", "Atención odontológica especializada para adultos mayores, con el cuidado, paciencia y protocolo que cada etapa merece."],
+            ["💆", "Armonía Facial", "Tratamientos complementarios para el bienestar facial y general, logrando equilibrio entre salud bucal y armonía estética."],
+          ].map(([icon, title, desc]) => (
             <div className="md-servicio-card" key={title}>
               <div className="md-servicio-icon">{icon}</div>
               <h3>{title}</h3>
@@ -291,16 +291,16 @@ export default function MarnieDiaz() {
       <section id="sobre-mi" className="md-sobre">
         <div className="md-sobre-img-wrap">
           <div className="md-sobre-img-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></svg>
             <span>📸 Foto de la Dra. Marnie Díaz</span>
           </div>
-          <div className="md-sobre-deco"/>
+          <div className="md-sobre-deco" />
           <div className="md-sobre-badge"><div className="num">10+</div><div className="lbl">Años de experiencia</div></div>
         </div>
         <div className="md-sobre-content">
           <div className="md-section-tag">Conóceme</div>
           <h2 className="md-section-title">Dra. <em>Marnie Díaz</em></h2>
-          <p className="md-section-sub" style={{marginTop:"1rem"}}>
+          <p className="md-section-sub" style={{ marginTop: "1rem" }}>
             Soy odontóloga con formación en la <strong>Universidad Regional Autónoma de los Andes</strong> y especialización en Rehabilitación Oral (FACOP). Mi misión es que cada paciente viva su visita como una experiencia cómoda, segura y transformadora.
           </p>
           <div className="md-univ-tag">🎓 Esp. Rehabilitación Oral — FACOP · UNIANDES</div>
@@ -317,7 +317,7 @@ export default function MarnieDiaz() {
             <div className="md-horario-item"><h4>Lunes a Viernes</h4><p>8:30 am — 5:00 pm</p></div>
             <div className="md-horario-item"><h4>Sábados</h4><p>9:00 am — 3:00 pm</p></div>
           </div>
-          <div style={{marginTop:"2rem",display:"flex",gap:"1rem",flexWrap:"wrap"}}>
+          <div style={{ marginTop: "2rem", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
             <a className="md-btn-primary" href={WA_MSG} target="_blank" rel="noreferrer">💬 Reservar cita</a>
             <a className="md-btn-outline" href="tel:+593998862001">📞 Llamar</a>
           </div>
@@ -330,10 +330,10 @@ export default function MarnieDiaz() {
         <h2 className="md-section-title">Casos & <em>Transformaciones</em></h2>
         <p className="md-section-sub">Cada sonrisa es una historia única. Síguenos en redes para ver los resultados más recientes.</p>
         <div className="md-galeria-grid">
-          {["Diseño de Sonrisa Completo","Rehabilitación Oral","Prótesis Dental","Endodoncia","Armonía Facial"].map((label,i) => (
+          {["Diseño de Sonrisa Completo", "Rehabilitación Oral", "Prótesis Dental", "Endodoncia", "Armonía Facial"].map((label, i) => (
             <div className={`md-galeria-item`} key={label}>
               <div className="md-galeria-inner">
-                <svg viewBox="0 0 24 24" fill="white"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                <svg viewBox="0 0 24 24" fill="white"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" /></svg>
                 <span className="md-galeria-label">{label}</span>
               </div>
               <div className="md-galeria-overlay"><span>{label} — Antes & Después</span></div>
@@ -343,10 +343,10 @@ export default function MarnieDiaz() {
         <p className="md-galeria-note">📸 Reemplaza los recuadros con fotos reales de tus casos clínicos</p>
         <div className="md-galeria-social">
           {[
-            ["https://www.instagram.com/dentistamarniediaz","@dentistamarniediaz"],
-            ["https://www.instagram.com/marniediazec","@marniediazec"],
-            ["https://www.facebook.com/DentistaMarnieDiaz","@DentistaMarnieDiaz"],
-          ].map(([href,label]) => (
+            ["https://www.instagram.com/dentistamarniediaz", "@dentistamarniediaz"],
+            ["https://www.instagram.com/marniediazec", "@marniediazec"],
+            ["https://www.facebook.com/DentistaMarnieDiaz", "@DentistaMarnieDiaz"],
+          ].map(([href, label]) => (
             <a key={label} href={href} target="_blank" rel="noreferrer">{label}</a>
           ))}
         </div>
@@ -359,12 +359,12 @@ export default function MarnieDiaz() {
         <p className="md-section-sub">La satisfacción de nuestros pacientes en Quito es nuestra mayor recompensa.</p>
         <div className="md-testimonios-grid">
           {[
-            ["A","Andrea R.","Rehabilitación oral · Quito","Fui por una rehabilitación oral completa y quedé sin palabras. La Dra. Marnie es muy profesional, explica cada paso con claridad y el resultado superó todas mis expectativas. ¡Mi sonrisa cambió por completo!"],
-            ["C","Carlos M.","Odontogeriatría · Prótesis","Llevé a mi mamá de 82 años y la atención fue increíble. La doctora tiene una paciencia enorme con los adultos mayores. La prótesis quedó perfecta y mi mamá come feliz nuevamente."],
-            ["L","Lucía P.","Endodoncia · Quito","Siempre tuve miedo al dentista pero en la clínica de La Gasca me sentí muy tranquila. Me hicieron la endodoncia sin ningún dolor y el consultorio es muy accesible. 100% recomendada."],
-          ].map(([initial,name,label,text]) => (
+            ["A", "Andrea R.", "Rehabilitación oral · Quito", "Fui por una rehabilitación oral completa y quedé sin palabras. La Dra. Marnie es muy profesional, explica cada paso con claridad y el resultado superó todas mis expectativas. ¡Mi sonrisa cambió por completo!"],
+            ["C", "Carlos M.", "Odontogeriatría · Prótesis", "Llevé a mi mamá de 82 años y la atención fue increíble. La doctora tiene una paciencia enorme con los adultos mayores. La prótesis quedó perfecta y mi mamá come feliz nuevamente."],
+            ["L", "Lucía P.", "Endodoncia · Quito", "Siempre tuve miedo al dentista pero en la clínica de La Gasca me sentí muy tranquila. Me hicieron la endodoncia sin ningún dolor y el consultorio es muy accesible. 100% recomendada."],
+          ].map(([initial, name, label, text]) => (
             <div className="md-testimonio-card" key={name}>
-              <div className="md-stars">{[1,2,3,4,5].map(i=><span key={i}>★</span>)}</div>
+              <div className="md-stars">{[1, 2, 3, 4, 5].map(i => <span key={i}>★</span>)}</div>
               <p className="md-testimonio-text">"{text}"</p>
               <div className="md-testimonio-author">
                 <div className="md-author-avatar">{initial}</div>
@@ -387,7 +387,7 @@ export default function MarnieDiaz() {
               <div>
                 <h4>Dirección</h4>
                 <p>Jerónimo Leiton N24-27 y Av. La Gasca</p>
-                <p style={{fontSize:".82rem",color:"var(--muted)",marginTop:"2px"}}>Parroquia La Gasca, Quito 170129, Ecuador</p>
+                <p style={{ fontSize: ".82rem", color: "var(--muted)", marginTop: "2px" }}>Parroquia La Gasca, Quito 170129, Ecuador</p>
               </div>
             </div>
             <div className="md-contacto-item">
@@ -414,25 +414,25 @@ export default function MarnieDiaz() {
           </div>
           <div className="md-mapa-wrap">
             <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.7972!2d-78.5085!3d-0.2105!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sJer%C3%B3nimo+Leiton!5e0!3m2!1ses!2sec!4v1"
-              width="100%" height="200" style={{border:0}} allowFullScreen loading="lazy" title="Ubicación Marnie Díaz Odontología"/>
+              width="100%" height="200" style={{ border: 0 }} allowFullScreen loading="lazy" title="Ubicación Marnie Díaz Odontología" />
           </div>
         </div>
         <div className="md-contacto-form">
           <h3>Solicitar una cita</h3>
           <div className="md-form-row">
-            <div className="md-form-group"><label>Nombre</label><input type="text" placeholder="Tu nombre completo"/></div>
-            <div className="md-form-group"><label>Teléfono</label><input type="tel" placeholder="099 000 0000"/></div>
+            <div className="md-form-group"><label>Nombre</label><input type="text" placeholder="Tu nombre completo" /></div>
+            <div className="md-form-group"><label>Teléfono</label><input type="tel" placeholder="099 000 0000" /></div>
           </div>
-          <div className="md-form-group"><label>Correo electrónico</label><input type="email" placeholder="tucorreo@email.com"/></div>
+          <div className="md-form-group"><label>Correo electrónico</label><input type="email" placeholder="tucorreo@email.com" /></div>
           <div className="md-form-group">
             <label>Servicio de interés</label>
             <select>
               <option value="">Selecciona un servicio</option>
-              {["Odontología Estética","Endodoncia","Rehabilitación Oral","Prótesis Dentales","Odontogeriatría","Armonía Facial","Consulta / Revisión General"].map(s=><option key={s}>{s}</option>)}
+              {["Odontología Estética", "Endodoncia", "Rehabilitación Oral", "Prótesis Dentales", "Odontogeriatría", "Armonía Facial", "Consulta / Revisión General"].map(s => <option key={s}>{s}</option>)}
             </select>
           </div>
-          <div className="md-form-group"><label>Mensaje</label><textarea placeholder="Cuéntanos en qué podemos ayudarte..."/></div>
-          <button className="md-form-submit" onClick={()=>window.open(WA_MSG,"_blank")}>
+          <div className="md-form-group"><label>Mensaje</label><textarea placeholder="Cuéntanos en qué podemos ayudarte..." /></div>
+          <button className="md-form-submit" onClick={() => window.open(WA_MSG, "_blank")}>
             Enviar por WhatsApp →
           </button>
         </div>
@@ -448,7 +448,7 @@ export default function MarnieDiaz() {
           <div className="md-footer-col">
             <h4>Servicios</h4>
             <div className="md-footer-links">
-              {["Odontología Estética","Endodoncia","Rehabilitación Oral","Prótesis Dentales","Odontogeriatría","Armonía Facial"].map(s=>(
+              {["Odontología Estética", "Endodoncia", "Rehabilitación Oral", "Prótesis Dentales", "Odontogeriatría", "Armonía Facial"].map(s => (
                 <a key={s} href="#servicios">{s}</a>
               ))}
             </div>
@@ -472,8 +472,8 @@ export default function MarnieDiaz() {
       {/* WA Float */}
       <a className="md-wa-float" href={WA_MSG} target="_blank" rel="noreferrer" title="Escríbenos por WhatsApp">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
-          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-          <path d="M12 0C5.373 0 0 5.373 0 12c0 2.116.554 4.101 1.523 5.823L0 24l6.362-1.498A11.96 11.96 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.018-1.38l-.36-.214-3.727.977.994-3.634-.235-.374A9.8 9.8 0 012.182 12C2.182 6.575 6.575 2.182 12 2.182S21.818 6.575 21.818 12 17.425 21.818 12 21.818z"/>
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+          <path d="M12 0C5.373 0 0 5.373 0 12c0 2.116.554 4.101 1.523 5.823L0 24l6.362-1.498A11.96 11.96 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.018-1.38l-.36-.214-3.727.977.994-3.634-.235-.374A9.8 9.8 0 012.182 12C2.182 6.575 6.575 2.182 12 2.182S21.818 6.575 21.818 12 17.425 21.818 12 21.818z" />
         </svg>
       </a>
     </>
