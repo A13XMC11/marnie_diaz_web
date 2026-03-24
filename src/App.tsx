@@ -9,6 +9,8 @@ import Citas from './pages/dashboard/Citas'
 import Procedimientos from './pages/dashboard/Procedimientos'
 import Pagos from './pages/dashboard/Pagos'
 import Odontograma from './pages/dashboard/Odontograma'
+import FichaForm from './pages/dashboard/fichas/FichaForm'
+import FichaDetalle from './pages/dashboard/fichas/FichaDetalle'
 
 export default function App() {
   return (
@@ -29,6 +31,8 @@ export default function App() {
         <Route index element={<Navigate to="pacientes" replace />} />
         <Route path="pacientes" element={<Pacientes />} />
         <Route path="pacientes/:id" element={<PacienteDetalle />} />
+        <Route path="pacientes/:id/fichas/nueva" element={<FichaForm />} />
+        <Route path="pacientes/:id/fichas/:fichaId" element={<FichaDetalle />} />
         <Route path="citas" element={<Citas />} />
         <Route path="procedimientos" element={<Procedimientos />} />
         <Route path="pagos" element={<Pagos />} />

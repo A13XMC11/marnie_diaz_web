@@ -60,7 +60,7 @@ export default function Procedimientos() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-deep">Procedimientos</h1>
+          <h1 className="text-2xl font-serif font-bold text-deep">Procedimientos</h1>
           <p className="text-sm text-gray-500 mt-0.5">Tratamientos realizados por paciente</p>
         </div>
         <button onClick={openNew} className="bg-azure hover:bg-deep text-white px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-azure/30">

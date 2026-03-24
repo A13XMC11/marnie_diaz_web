@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import FichasList from './fichas/FichasList'
+import OdontogramaSVG from '../../components/odontograma/OdontogramaSVG'
+import { getDefaultOdontograma } from '../../components/odontograma/odontogramaUtils'
+import type { FichaClinica, DienteOdontograma } from '../../types/fichas'
 
 interface Paciente {
   id: string; nombre: string; apellido: string; cedula: string
@@ -10,26 +14,9 @@ interface Paciente {
 interface Cita { id: string; fecha: string; hora: string; motivo: string; estado: string; notas: string }
 interface Procedimiento { id: string; tipo: string; descripcion: string; costo: number; fecha: string; estado: string }
 interface Pago { id: string; monto: number; fecha: string; metodo_pago: string; estado: string; notas: string }
-interface Diente { id?: string; paciente_id?: string; diente_numero: number; estado: string; notas: string; fecha: string }
 
-const tabs = ['Datos', 'Citas', 'Procedimientos', 'Pagos', 'Odontograma'] as const
+const tabs = ['Fichas', 'Datos', 'Citas', 'Procedimientos', 'Pagos', 'Odontograma'] as const
 type Tab = typeof tabs[number]
-
-const DIENTES_FDI = [
-  [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28],
-  [48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38],
-]
-const ESTADO_COLORS: Record<string, string> = {
-  sano:'bg-green-100 text-green-700 border-green-200',
-  caries:'bg-red-100 text-red-700 border-red-200',
-  obturado:'bg-blue-100 text-blue-700 border-blue-200',
-  extraccion:'bg-gray-200 text-gray-700 border-gray-300',
-  corona:'bg-yellow-100 text-yellow-700 border-yellow-200',
-  puente:'bg-purple-100 text-purple-700 border-purple-200',
-  implante:'bg-teal-100 text-teal-700 border-teal-200',
-  fractura:'bg-orange-100 text-orange-700 border-orange-200',
-  otro:'bg-gray-100 text-gray-600 border-gray-200',
-}
 
 export default function PacienteDetalle() {
   const { id } = useParams()
@@ -37,57 +24,54 @@ export default function PacienteDetalle() {
   const [citas, setCitas] = useState<Cita[]>([])
   const [procedimientos, setProcedimientos] = useState<Procedimiento[]>([])
   const [pagos, setPagos] = useState<Pago[]>([])
-  const [odontograma, setOdontograma] = useState<Record<number, Diente>>({})
-  const [tab, setTab] = useState<Tab>('Datos')
+  const [fichas, setFichas] = useState<FichaClinica[]>([])
+  const [dientesSVG, setDientesSVG] = useState<DienteOdontograma[]>(getDefaultOdontograma())
+  const [tab, setTab] = useState<Tab>('Fichas')
   const [loading, setLoading] = useState(true)
-  const [selectedDiente, setSelectedDiente] = useState<number | null>(null)
-  const [dienteForm, setDienteForm] = useState<{estado:string; notas:string}>({estado:'sano',notas:''})
-  const [savingDiente, setSavingDiente] = useState(false)
 
   const fetchAll = useCallback(async () => {
     if (!id) return
     setLoading(true)
-    const [p, c, pr, pa, od] = await Promise.all([
+    const [p, c, pr, pa, od, fi] = await Promise.all([
       supabase.from('pacientes').select('*').eq('id', id).single(),
       supabase.from('citas').select('*').eq('paciente_id', id).order('fecha', { ascending: false }),
       supabase.from('procedimientos').select('*').eq('paciente_id', id).order('fecha', { ascending: false }),
       supabase.from('pagos').select('*').eq('paciente_id', id).order('fecha', { ascending: false }),
       supabase.from('odontograma').select('*').eq('paciente_id', id),
+      supabase.from('fichas_clinicas').select('*').eq('paciente_id', id).order('fecha', { ascending: false }),
     ])
     setPaciente(p.data)
     setCitas(c.data ?? [])
     setProcedimientos(pr.data ?? [])
     setPagos(pa.data ?? [])
-    const odMap: Record<number, Diente> = {}
-    for (const d of (od.data ?? [])) odMap[d.diente_numero] = d
-    setOdontograma(odMap)
+    setFichas(fi.data ?? [])
+
+    // Build SVG odontogram from odontograma table
+    const base = getDefaultOdontograma()
+    for (const record of (od.data ?? [])) {
+      if (record.superficies) {
+        const idx = base.findIndex(d => d.numero === record.diente_numero)
+        if (idx >= 0) base[idx] = { numero: record.diente_numero, superficies: record.superficies, notas: record.notas }
+      }
+    }
+    // If latest ficha has odontograma_snapshot, use it for the Odontograma tab
+    if (fi.data && fi.data.length > 0 && fi.data[0].odontograma_snapshot?.length > 0) {
+      const snapBase = getDefaultOdontograma()
+      for (const snap of fi.data[0].odontograma_snapshot) {
+        const idx = snapBase.findIndex(d => d.numero === snap.numero)
+        if (idx >= 0) snapBase[idx] = snap
+      }
+      setDientesSVG(snapBase)
+    } else {
+      setDientesSVG(base)
+    }
     setLoading(false)
   }, [id])
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
-  const abrirDiente = (num: number) => {
-    const existing = odontograma[num]
-    setSelectedDiente(num)
-    setDienteForm({ estado: existing?.estado ?? 'sano', notas: existing?.notas ?? '' })
-  }
-
-  const guardarDiente = async () => {
-    if (!id || selectedDiente === null) return
-    setSavingDiente(true)
-    const existing = odontograma[selectedDiente]
-    if (existing?.id) {
-      await supabase.from('odontograma').update({ ...dienteForm, fecha: new Date().toISOString().split('T')[0] }).eq('id', existing.id)
-    } else {
-      await supabase.from('odontograma').insert({ paciente_id: id, diente_numero: selectedDiente, ...dienteForm, fecha: new Date().toISOString().split('T')[0] })
-    }
-    setSavingDiente(false)
-    setSelectedDiente(null)
-    fetchAll()
-  }
-
-  const totalPagado = pagos.filter(p=>p.estado==='pagado').reduce((s,p)=>s+p.monto,0)
-  const totalPendiente = pagos.filter(p=>p.estado==='pendiente').reduce((s,p)=>s+p.monto,0)
+  const totalPagado = pagos.filter(p => p.estado === 'pagado').reduce((s, p) => s + p.monto, 0)
+  const totalPendiente = pagos.filter(p => p.estado === 'pendiente').reduce((s, p) => s + p.monto, 0)
 
   if (loading) return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-azure border-t-transparent rounded-full animate-spin"/></div>
   if (!paciente) return <div className="text-center py-20 text-gray-500">Paciente no encontrado</div>
@@ -116,6 +100,7 @@ export default function PacienteDetalle() {
           )}
         </div>
         <div className="hidden md:flex gap-6 text-center">
+          <div><div className="text-2xl font-bold">{fichas.length}</div><div className="text-white/60 text-xs mt-0.5">Fichas</div></div>
           <div><div className="text-2xl font-bold">{citas.length}</div><div className="text-white/60 text-xs mt-0.5">Citas</div></div>
           <div><div className="text-2xl font-bold">{procedimientos.length}</div><div className="text-white/60 text-xs mt-0.5">Procedimientos</div></div>
           <div><div className="text-2xl font-bold text-green-300">${totalPagado.toFixed(0)}</div><div className="text-white/60 text-xs mt-0.5">Pagado</div></div>
@@ -132,6 +117,11 @@ export default function PacienteDetalle() {
           </button>
         ))}
       </div>
+
+      {/* Tab: Fichas */}
+      {tab === 'Fichas' && id && (
+        <FichasList fichas={fichas} pacienteId={id} />
+      )}
 
       {/* Tab: Datos */}
       {tab === 'Datos' && (
@@ -235,56 +225,17 @@ export default function PacienteDetalle() {
 
       {/* Tab: Odontograma */}
       {tab === 'Odontograma' && (
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <h3 className="font-semibold text-gray-700 mb-5">Mapa dental — Click en un diente para registrar/editar estado</h3>
-          <div className="space-y-4">
-            {DIENTES_FDI.map((row, ri) => (
-              <div key={ri} className="flex gap-2 flex-wrap justify-center">
-                {row.map(num => {
-                  const d = odontograma[num]
-                  const cls = ESTADO_COLORS[d?.estado ?? 'sano']
-                  return (
-                    <button key={num} onClick={() => abrirDiente(num)}
-                      className={`w-12 h-14 rounded-xl border-2 flex flex-col items-center justify-center gap-0.5 transition-all hover:scale-105 hover:shadow-md ${cls}`}>
-                      <span className="text-[10px] font-bold">{num}</span>
-                      <span className="text-[8px] leading-tight text-center px-0.5">{d?.estado?.slice(0,3) ?? '—'}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            ))}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm text-gray-500">Estado dental de la última ficha clínica registrada</p>
+            <Link
+              to={`/dashboard/pacientes/${id}/fichas/nueva`}
+              className="text-xs text-azure hover:text-deep transition-colors"
+            >
+              Registrar nueva ficha →
+            </Link>
           </div>
-          {/* Leyenda */}
-          <div className="mt-6 flex flex-wrap gap-2 justify-center">
-            {Object.entries(ESTADO_COLORS).map(([estado, cls]) => (
-              <span key={estado} className={`text-xs px-2.5 py-1 rounded-full border font-medium ${cls}`}>{estado}</span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Modal editar diente */}
-      {selectedDiente !== null && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
-            <h3 className="font-bold text-deep text-lg mb-4">Diente {selectedDiente}</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wider block mb-1">Estado</label>
-                <select value={dienteForm.estado} onChange={e=>setDienteForm({...dienteForm,estado:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure">
-                  {Object.keys(ESTADO_COLORS).map(e=><option key={e}>{e}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wider block mb-1">Notas</label>
-                <textarea value={dienteForm.notas} onChange={e=>setDienteForm({...dienteForm,notas:e.target.value})} rows={3} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure resize-none" placeholder="Observaciones..."/>
-              </div>
-            </div>
-            <div className="flex gap-3 mt-4">
-              <button onClick={()=>setSelectedDiente(null)} className="flex-1 border border-gray-200 text-gray-700 py-2.5 rounded-xl text-sm hover:bg-gray-50">Cancelar</button>
-              <button onClick={guardarDiente} disabled={savingDiente} className="flex-1 bg-azure text-white py-2.5 rounded-xl text-sm hover:bg-deep transition-all disabled:opacity-60">{savingDiente ? 'Guardando...' : 'Guardar'}</button>
-            </div>
-          </div>
+          <OdontogramaSVG dientes={dientesSVG} mode="view" />
         </div>
       )}
     </div>
