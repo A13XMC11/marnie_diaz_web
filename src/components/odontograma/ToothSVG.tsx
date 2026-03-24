@@ -91,11 +91,12 @@ export default function ToothSVG({
     <div className={`flex flex-col items-center ${mode === 'edit' ? 'cursor-pointer' : ''}`}>
       <svg
         viewBox="0 0 44 54"
-        width={44}
-        height={54}
-        className={`${isSelected ? 'ring-2 ring-azure ring-offset-1' : ''} ${
-          mode === 'edit' ? 'hover:opacity-80 transition-opacity' : ''
+        width={80}
+        height={95}
+        className={`transition-all ${isSelected ? 'ring-2 ring-offset-2 ring-azure drop-shadow-lg scale-105' : 'hover:drop-shadow-md hover:scale-105'} ${
+          mode === 'edit' ? 'hover:opacity-90' : ''
         }`}
+        style={{borderRadius: '8px'}}
       >
         {/* Tooth surfaces — all 5 */}
         {(Object.keys(coords) as SuperficieClave[]).map(superficie => {

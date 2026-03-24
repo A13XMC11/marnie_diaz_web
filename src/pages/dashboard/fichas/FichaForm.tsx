@@ -199,7 +199,7 @@ export default function FichaForm() {
             <div>
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Fecha de consulta</label>
               <input type="date" value={fecha} onChange={e => setFecha(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors" />
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors bg-white" />
             </div>
             <div className="md:col-span-2">
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
@@ -207,19 +207,19 @@ export default function FichaForm() {
               </label>
               <textarea value={motivoConsulta} onChange={e => setMotivoConsulta(e.target.value)} rows={2}
                 placeholder="¿Por qué acude el paciente?" required
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors resize-none" />
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors resize-none bg-white" />
             </div>
             <div className="md:col-span-2">
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Enfermedad o problema actual</label>
               <textarea value={enfermedadActual} onChange={e => setEnfermedadActual(e.target.value)} rows={3}
                 placeholder="Síntomas, cronología, localización, características, intensidad, causa aparente..."
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors resize-none" />
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors resize-none bg-white" />
             </div>
             <div className="md:col-span-2">
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Antecedentes personales y familiares</label>
               <textarea value={antecedentesVisita} onChange={e => setAntecedentesVisita(e.target.value)} rows={2}
                 placeholder="Alergias, enfermedades crónicas, medicación actual..."
-                className="w-full border border-amber-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-amber-400 transition-colors resize-none bg-amber-50" />
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors resize-none bg-white" />
             </div>
           </div>
         </div>
@@ -248,7 +248,7 @@ export default function FichaForm() {
                   value={(signosVitales as any)[key] || ''}
                   onChange={e => setSignosVitales(prev => ({ ...prev, [key]: type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value }))}
                   placeholder={placeholder}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors bg-white"
                 />
               </div>
             ))}
@@ -272,7 +272,7 @@ export default function FichaForm() {
                   onChange={e => setExamen(prev => ({ ...prev, [key]: e.target.value }))}
                   rows={2}
                   placeholder="Normal"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors resize-none"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors resize-none bg-white"
                 />
               </div>
             ))}
@@ -319,7 +319,7 @@ export default function FichaForm() {
                 <input type="number" step="0.1"
                   value={(indicadores as any)[key] || ''}
                   onChange={e => setIndicadores(prev => ({ ...prev, [key]: parseFloat(e.target.value) || 0 }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors bg-white"
                 />
               </div>
             ))}
@@ -338,7 +338,7 @@ export default function FichaForm() {
                   value={(indicadores as any)[key]}
                   onChange={e => setIndicadores(prev => ({ ...prev, [key]: e.target.value }))}
                   placeholder="Descripción"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors bg-white"
                 />
               </div>
             ))}
@@ -377,7 +377,7 @@ export default function FichaForm() {
                                 ...prev,
                                 [key]: { ...prev[key as 'cpo' | 'ceo'], [field]: parseInt(e.target.value) || 0 }
                               }))}
-                              className="w-16 text-center border border-gray-200 rounded-lg px-2 py-1 text-sm outline-none focus:border-azure transition-colors"
+                              className="w-16 text-center border border-gray-200 rounded-lg px-2 py-1 text-sm outline-none focus:border-azure transition-colors bg-white"
                             />
                           </td>
                         ))}
@@ -400,7 +400,7 @@ export default function FichaForm() {
           } />
           <textarea value={observaciones} onChange={e => setObservaciones(e.target.value)} rows={5}
             placeholder="Diagnóstico, plan de tratamiento, recomendaciones, próxima cita..."
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors resize-none"
+            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors resize-none bg-white"
           />
         </div>
 

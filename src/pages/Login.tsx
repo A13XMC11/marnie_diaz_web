@@ -67,7 +67,7 @@ export default function Login() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 placeholder="admin@example.com"
-                className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl text-sm text-gray-700 outline-none focus:border-azure transition-colors bg-gray-50 focus:bg-white"
+                className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl text-sm text-gray-700 outline-none focus:border-azure transition-colors bg-white"
               />
             </div>
             <div>
@@ -78,7 +78,7 @@ export default function Login() {
                 onChange={e => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl text-sm text-gray-700 outline-none focus:border-azure transition-colors bg-gray-50 focus:bg-white"
+                className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl text-sm text-gray-700 outline-none focus:border-azure transition-colors bg-white"
               />
             </div>
 

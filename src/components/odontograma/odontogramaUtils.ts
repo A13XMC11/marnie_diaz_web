@@ -18,8 +18,8 @@ export const SIMBOLO_COLORS: Record<SimboloOdonto, { fill: string; stroke: strin
   restauracion: { fill: '#dbeafe', stroke: '#3b82f6', textColor: '#1d4ed8' },
   resto_radicular: { fill: '#fee2e2', stroke: '#ef4444', textColor: '#dc2626' },
   corona: { fill: '#dbeafe', stroke: '#3b82f6', textColor: '#1d4ed8' },
-  extraccion: { fill: '#fef3c7', stroke: '#ef4444', textColor: '#dc2626' },
-  ausente: { fill: '#f3f4f6', stroke: '#9ca3af', textColor: '#6b7280' },
+  extraccion: { fill: '#fee2e2', stroke: '#ef4444', textColor: '#dc2626' },
+  ausente: { fill: '#fee2e2', stroke: '#ef4444', textColor: '#dc2626' },
   sellante: { fill: '#dbeafe', stroke: '#3b82f6', textColor: '#1d4ed8' },
   endodoncia: { fill: '#dbeafe', stroke: '#3b82f6', textColor: '#1d4ed8' },
   protesis_removible: { fill: '#dbeafe', stroke: '#3b82f6', textColor: '#1d4ed8' },
@@ -30,26 +30,26 @@ export const SIMBOLO_COLORS: Record<SimboloOdonto, { fill: string; stroke: strin
 // ── Symbol labels for display ──────────────────────────────────────────
 export const SIMBOLO_LABELS: Record<SimboloOdonto, string> = {
   sano: 'Sano',
-  caries: 'Caries (O)',
-  restauracion: 'Restauración (/)',
-  resto_radicular: 'Resto radicular (F)',
-  corona: 'Corona (C)',
-  extraccion: 'Extracción (X)',
-  ausente: 'Ausente (A)',
-  sellante: 'Sellante (*)',
-  endodoncia: 'Endodoncia (I)',
-  protesis_removible: 'Prótesis removible',
-  protesis_total: 'Prótesis total',
+  caries: 'Caries',
+  restauracion: 'Restauración',
+  resto_radicular: 'Resto Radicular',
+  corona: 'Corona',
+  extraccion: 'Extracción',
+  ausente: 'Ausente',
+  sellante: 'Sellante',
+  endodoncia: 'Endodoncia',
+  protesis_removible: 'Prótesis Removible',
+  protesis_total: 'Prótesis Total',
   puente: 'Puente',
 }
 
 // ── Surface labels ────────────────────────────────────────────────────
 export const SUPERFICIE_LABELS: Record<SuperficieClave, string> = {
-  mesial: 'Mesial (M)',
-  distal: 'Distal (D)',
-  oclusal: 'Oclusal/Incisal (O/I)',
-  vestibular: 'Vestibular (V)',
-  palatino: 'Palatino/Lingual (P/L)',
+  mesial: 'Mesial',
+  distal: 'Distal',
+  oclusal: 'Oclusal/Incisal',
+  vestibular: 'Vestibular',
+  palatino: 'Palatino/Lingual',
 }
 
 // ── Helper: is tooth posterior or anterior ─────────────────────────────

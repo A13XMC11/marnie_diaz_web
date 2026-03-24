@@ -113,7 +113,7 @@ export default function DashboardLayout() {
   const initials = user?.email ? user.email.slice(0, 2).toUpperCase() : 'AD'
 
   return (
-    <div className="min-h-screen bg-gray-50/80 flex">
+    <div className="min-h-screen bg-white flex">
       {/* Sidebar */}
       <aside className={`
         fixed inset-y-0 left-0 z-50 w-64 flex flex-col

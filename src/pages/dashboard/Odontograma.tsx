@@ -100,12 +100,14 @@ export default function Odontograma() {
       </div>
 
       {/* Select paciente */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-5 shadow-sm">
-        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Seleccionar paciente</label>
+      <div className="bg-gradient-to-r from-azure/10 via-deep/5 to-blue-50 rounded-2xl border-2 border-azure/30 p-6 mb-8 shadow-md">
+        <label className="block text-sm font-bold text-deep uppercase tracking-wider mb-4 flex items-center gap-2">
+          <span className="text-xl">👤</span> Seleccionar Paciente
+        </label>
         <select
           value={selectedPaciente}
           onChange={e => handleSelectPaciente(e.target.value)}
-          className="w-full md:w-96 border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors"
+          className="w-full md:w-96 border-2 border-azure/40 rounded-xl px-4 py-3 text-sm outline-none focus:border-azure focus:ring-3 focus:ring-azure/30 transition-all bg-white hover:border-azure hover:shadow-md"
         >
           <option value="">— Selecciona un paciente —</option>
           {pacientes.map(p => <option key={p.id} value={p.id}>{p.apellido}, {p.nombre}</option>)}
