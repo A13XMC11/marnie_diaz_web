@@ -15,7 +15,7 @@ export default function Odontograma() {
   const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
-    supabase.from('pacientes').select('id, nombre, apellido').order('apellido').then(({data}: {data: Paciente[] | null}) => setPacientes(data ?? []))
+    supabase.from('pacientes').select('id, nombre, apellido').order('apellido').then(({data}: {data: Paciente[] | null}) => setPacientes(data ?? [])).catch(() => setPacientes([]))
   }, [])
 
   const fetchOdontograma = useCallback(async (pid: string) => {
@@ -55,12 +55,13 @@ export default function Odontograma() {
 
   const handleDientesChange = async (updated: DienteOdontograma[]) => {
     if (!selectedPaciente) return
-    setDientes(updated)
 
-    // Find only the changed teeth (compare with current state)
+    // Find only the changed teeth (compare with current state before update)
     const changedDientes = updated.filter((d, i) =>
       JSON.stringify(d) !== JSON.stringify(dientes[i])
     )
+
+    setDientes(updated)
 
     if (changedDientes.length === 0) return
 
