@@ -1,14 +1,47 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import LogoMarnieDiaz from './assets/LogoMarnieDiaz.png';
 
 const WA_1 = "https://wa.me/593998862001";
 const WA_2 = "https://wa.me/593998826201";
 const WA_MSG = `${WA_1}?text=Hola%2C%20quiero%20agendar%20una%20cita%20en%20Marnie%20D%C3%ADaz%20Odontolog%C3%ADa`;
 
+const ALL_TESTIMONIOS = [
+  ["A","Andrea R.","Rehabilitación oral · Quito","Fui por una rehabilitación oral completa y quedé sin palabras. La Dra. Marnie es muy profesional, explica cada paso con claridad y el resultado superó todas mis expectativas. ¡Mi sonrisa cambió por completo!"],
+  ["C","Carlos M.","Odontogeriatría · Prótesis","Llevé a mi mamá de 82 años y la atención fue increíble. La doctora tiene una paciencia enorme con los adultos mayores. La prótesis quedó perfecta y mi mamá come feliz nuevamente."],
+  ["L","Lucía P.","Endodoncia · Quito","Siempre tuve miedo al dentista pero en la clínica de La Gasca me sentí muy tranquila. Me hicieron la endodoncia sin ningún dolor y el consultorio es muy accesible. 100% recomendada."],
+  ["M","María F.","Diseño de Sonrisa","Siempre soñé con una sonrisa perfecta y la Dra. Marnie lo hizo posible. El diseño quedó completamente natural, exactamente lo que quería. ¡Me cambió la vida!"],
+  ["R","Roberto G.","Armonía Facial","Vine por un tratamiento de armonía facial y el resultado fue increíble. La doctora tiene un ojo clínico excepcional y se nota que ama lo que hace."],
+  ["P","Patricia V.","Odontogeriatría","Mi madre de 78 años necesitaba atención especializada y aquí la encontramos. La paciencia y el cuidado que le brindaron fueron extraordinarios. Totalmente recomendada."],
+];
+
 export default function MarnieDiaz() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [current, setCurrent] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
   const closeMenu = () => setMenuOpen(false);
+
+  const total = ALL_TESTIMONIOS.length;
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (paused) return;
+    const timer = setInterval(() => {
+      setCurrent(prev => (prev + 1) % total);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [paused, total]);
+
+  const visibles = windowWidth >= 768 ? 3 : 1;
+  const nextSlide = () => setCurrent(prev => (prev + 1) % total);
+  const prevSlide = () => setCurrent(prev => (prev - 1 + total) % total);
 
   return (
     <>
@@ -204,11 +237,40 @@ export default function MarnieDiaz() {
           .md-hero-stats{gap:1.5rem;}
           .md-footer-grid{grid-template-columns:1fr;gap:2rem;}
         }
+
+        /* GALERIA ANTES/DESPUÉS CARDS */
+        .md-ab-card{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:4/3;cursor:pointer;transition:transform .3s;border:1px solid rgba(255,255,255,.12);}
+        .md-ab-card:first-child{grid-column:span 2;aspect-ratio:2/1;}
+        .md-ab-card:hover{transform:scale(1.02);}
+        .md-ab-inner{display:flex;position:absolute;inset:0;}
+        .md-ab-before{flex:1;background:radial-gradient(circle at 40% 40%,#d4b896,#b8956a);display:flex;flex-direction:column;align-items:flex-start;padding:.55rem .6rem .4rem;}
+        .md-ab-after{flex:1;background:radial-gradient(circle at 60% 40%,#e8f4fd,#ffffff);display:flex;flex-direction:column;align-items:flex-end;padding:.55rem .6rem .4rem;}
+        .md-ab-before-svg,.md-ab-after-svg{flex:1;width:100%;display:flex;align-items:center;justify-content:center;}
+        .md-ab-divider{position:absolute;left:50%;top:0;bottom:0;width:2px;background:white;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;}
+        .md-ab-divider-icon{background:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#333;box-shadow:0 2px 8px rgba(0,0,0,.25);flex-shrink:0;font-weight:700;}
+        .md-ab-label-antes{font-size:11px;font-weight:700;letter-spacing:.05em;color:white;background:#dc2626;padding:.2rem .5rem;border-radius:4px;text-transform:uppercase;line-height:1.4;}
+        .md-ab-label-despues{font-size:11px;font-weight:700;letter-spacing:.05em;color:white;background:#16a34a;padding:.2rem .5rem;border-radius:4px;text-transform:uppercase;line-height:1.4;}
+        .md-ab-treatment{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(13,61,92,.92) 0%,transparent 100%);padding:.9rem .8rem .65rem;text-align:center;}
+        .md-ab-treatment span{font-size:.78rem;color:var(--white);font-weight:500;}
+
+        /* TESTIMONIOS CARRUSEL */
+        .md-carousel-wrap{position:relative;overflow:hidden;margin-top:3rem;}
+        .md-carousel-track{display:flex;transition:transform .5s ease-in-out;will-change:transform;}
+        .md-carousel-slide{flex-shrink:0;padding:0 .75rem;box-sizing:border-box;}
+        .md-carousel-dots{display:flex;justify-content:center;gap:.5rem;margin-top:1.8rem;}
+        .md-carousel-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;transition:background .2s,transform .2s;}
+        .md-carousel-dot.active{background:var(--azure);transform:scale(1.3);}
+        .md-carousel-btn{position:absolute;top:calc(50% - 20px);transform:translateY(-50%);background:var(--white);border:1.5px solid var(--accent);border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;font-size:1.1rem;color:var(--azure);transition:all .2s;box-shadow:0 4px 12px rgba(0,0,0,.1);}
+        .md-carousel-btn:hover{background:var(--azure);color:var(--white);}
+        .md-carousel-btn.prev{left:-8px;}
+        .md-carousel-btn.next{right:-8px;}
       `}</style>
 
       {/* NAV */}
       <nav className="md-nav">
-        <a className="md-nav-logo" href="#inicio">Marnie Díaz <span>Odontología</span></a>
+        <a href="#inicio" style={{display:"flex",alignItems:"center",textDecoration:"none"}}>
+          <img src={LogoMarnieDiaz} alt="Marnie Díaz Odontología" style={{height:"52px",width:"auto",objectFit:"contain",background:"transparent",mixBlendMode:"multiply"}} />
+        </a>
         <ul className="md-nav-links">
           {["servicios","sobre-mi","galeria","testimonios","contacto"].map(s => (
             <li key={s}><a href={`#${s}`}>{s.replace("-"," ")}</a></li>
@@ -338,17 +400,47 @@ export default function MarnieDiaz() {
         <h2 className="md-section-title">Casos & <em>Transformaciones</em></h2>
         <p className="md-section-sub">Cada sonrisa es una historia única. Síguenos en redes para ver los resultados más recientes.</p>
         <div className="md-galeria-grid">
-          {["Diseño de Sonrisa Completo","Rehabilitación Oral","Prótesis Dental","Endodoncia","Armonía Facial"].map((label) => (
-            <div className={`md-galeria-item`} key={label}>
-              <div className="md-galeria-inner">
-                <svg viewBox="0 0 24 24" fill="white"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
-                <span className="md-galeria-label">{label}</span>
+          {["Diseño de Sonrisa","Rehabilitación Oral","Prótesis Dental","Endodoncia","Armonía Facial"].map((label) => (
+            <div className="md-ab-card" key={label}>
+              <div className="md-ab-inner">
+                {/* ANTES */}
+                <div className="md-ab-before">
+                  <span className="md-ab-label-antes">ANTES</span>
+                  <div className="md-ab-before-svg">
+                    <svg viewBox="0 0 110 72" style={{width:"88%"}} xmlns="http://www.w3.org/2000/svg">
+                      <rect x="10" y="20" width="20" height="38" rx="7" fill="#c8a882" stroke="#a07850" strokeWidth="1.5"/>
+                      <rect x="36" y="16" width="20" height="42" rx="7" fill="#c8a882" stroke="#a07850" strokeWidth="1.5"/>
+                      <rect x="62" y="16" width="20" height="42" rx="7" fill="#c8a882" stroke="#a07850" strokeWidth="1.5"/>
+                      <rect x="88" y="20" width="18" height="38" rx="7" fill="#c8a882" stroke="#a07850" strokeWidth="1.5"/>
+                      <ellipse cx="22" cy="31" rx="3.5" ry="2.5" fill="#8b6914" opacity="0.65"/>
+                      <ellipse cx="48" cy="37" rx="3" ry="2" fill="#8b6914" opacity="0.65"/>
+                      <ellipse cx="74" cy="28" rx="2.5" ry="2" fill="#8b6914" opacity="0.55"/>
+                      <ellipse cx="96" cy="34" rx="2" ry="1.5" fill="#6b4e10" opacity="0.5"/>
+                    </svg>
+                  </div>
+                </div>
+                {/* DESPUÉS */}
+                <div className="md-ab-after">
+                  <span className="md-ab-label-despues">DESPUÉS</span>
+                  <div className="md-ab-after-svg">
+                    <svg viewBox="0 0 110 72" style={{width:"88%"}} xmlns="http://www.w3.org/2000/svg">
+                      <rect x="10" y="20" width="20" height="38" rx="7" fill="#f0f8ff" stroke="#c5e8fa" strokeWidth="1.5"/>
+                      <rect x="36" y="16" width="20" height="42" rx="7" fill="#f0f8ff" stroke="#c5e8fa" strokeWidth="1.5"/>
+                      <rect x="62" y="16" width="20" height="42" rx="7" fill="#f0f8ff" stroke="#c5e8fa" strokeWidth="1.5"/>
+                      <rect x="88" y="20" width="18" height="38" rx="7" fill="#f0f8ff" stroke="#c5e8fa" strokeWidth="1.5"/>
+                      <rect x="12" y="22" width="8" height="10" rx="4" fill="white" opacity="0.75"/>
+                      <rect x="38" y="18" width="8" height="10" rx="4" fill="white" opacity="0.75"/>
+                      <rect x="64" y="18" width="8" height="10" rx="4" fill="white" opacity="0.75"/>
+                      <rect x="90" y="22" width="7" height="9" rx="3" fill="white" opacity="0.75"/>
+                    </svg>
+                  </div>
+                </div>
               </div>
-              <div className="md-galeria-overlay"><span>{label} — Antes & Después</span></div>
+              <div className="md-ab-divider"><div className="md-ab-divider-icon">↔</div></div>
+              <div className="md-ab-treatment"><span>{label}</span></div>
             </div>
           ))}
         </div>
-        <p className="md-galeria-note">📸 Reemplaza los recuadros con fotos reales de tus casos clínicos</p>
         <div className="md-galeria-social">
           {[
             ["https://www.instagram.com/dentistamarniediaz","@dentistamarniediaz"],
@@ -365,21 +457,39 @@ export default function MarnieDiaz() {
         <div className="md-section-tag">Lo que dicen</div>
         <h2 className="md-section-title">Pacientes que <em>sonríen</em></h2>
         <p className="md-section-sub">La satisfacción de nuestros pacientes en Quito es nuestra mayor recompensa.</p>
-        <div className="md-testimonios-grid">
-          {[
-            ["A","Andrea R.","Rehabilitación oral · Quito","Fui por una rehabilitación oral completa y quedé sin palabras. La Dra. Marnie es muy profesional, explica cada paso con claridad y el resultado superó todas mis expectativas. ¡Mi sonrisa cambió por completo!"],
-            ["C","Carlos M.","Odontogeriatría · Prótesis","Llevé a mi mamá de 82 años y la atención fue increíble. La doctora tiene una paciencia enorme con los adultos mayores. La prótesis quedó perfecta y mi mamá come feliz nuevamente."],
-            ["L","Lucía P.","Endodoncia · Quito","Siempre tuve miedo al dentista pero en la clínica de La Gasca me sentí muy tranquila. Me hicieron la endodoncia sin ningún dolor y el consultorio es muy accesible. 100% recomendada."],
-          ].map(([initial,name,label,text]) => (
-            <div className="md-testimonio-card" key={name}>
-              <div className="md-stars">{[1,2,3,4,5].map(i=><span key={i}>★</span>)}</div>
-              <p className="md-testimonio-text">"{text}"</p>
-              <div className="md-testimonio-author">
-                <div className="md-author-avatar">{initial}</div>
-                <div><div className="md-author-name">{name}</div><div className="md-author-label">{label}</div></div>
+        <div
+          className="md-carousel-wrap"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          <button className="md-carousel-btn prev" onClick={prevSlide} aria-label="Anterior">‹</button>
+          <button className="md-carousel-btn next" onClick={nextSlide} aria-label="Siguiente">›</button>
+          <div
+            className="md-carousel-track"
+            style={{ transform: `translateX(-${current * (100 / visibles)}%)` }}
+          >
+            {ALL_TESTIMONIOS.map(([initial,name,label,text], i) => (
+              <div
+                className="md-carousel-slide"
+                key={i}
+                style={{ width: `${100 / visibles}%` }}
+              >
+                <div className="md-testimonio-card">
+                  <div className="md-stars">{[1,2,3,4,5].map(j=><span key={j}>★</span>)}</div>
+                  <p className="md-testimonio-text">"{text}"</p>
+                  <div className="md-testimonio-author">
+                    <div className="md-author-avatar">{initial}</div>
+                    <div><div className="md-author-name">{name}</div><div className="md-author-label">{label}</div></div>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+          <div className="md-carousel-dots">
+            {ALL_TESTIMONIOS.map((_,i) => (
+              <button key={i} className={`md-carousel-dot${current === i ? ' active' : ''}`} onClick={() => setCurrent(i)} aria-label={`Ir a testimonio ${i+1}`} />
+            ))}
+          </div>
         </div>
       </section>
 
@@ -450,7 +560,9 @@ export default function MarnieDiaz() {
       <footer className="md-footer">
         <div className="md-footer-grid">
           <div>
-            <div className="md-footer-logo">Marnie Díaz <span>Odontología</span></div>
+            <div style={{marginBottom:".5rem"}}>
+              <img src={LogoMarnieDiaz} alt="Marnie Díaz Odontología" style={{height:"40px",width:"auto",objectFit:"contain",filter:"brightness(0) invert(1)"}} />
+            </div>
             <p className="md-footer-desc">Clínica dental especializada en odontología estética e integral. Jerónimo Leiton N24-27 y Av. La Gasca, Quito, Ecuador.</p>
           </div>
           <div className="md-footer-col">

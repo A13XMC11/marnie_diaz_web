@@ -87,23 +87,26 @@ export default function OdontogramaSVG({ dientes, mode, onDientesChange }: Odont
   }
 
   const renderArchRow = (toothNumbers: readonly number[], label: string, isBaby: boolean = false) => {
-    const scale = isBaby ? 0.88 : 1
-    const rowHeight = isBaby ? 60 : 70
+    const scale = isBaby ? 0.9 : 1
 
     return (
-      <div key={label} className="flex flex-col items-center mb-10">
+      <div key={label} className="flex flex-col items-center mb-4">
         {/* Arch label */}
-        <div className={`text-sm font-bold uppercase tracking-widest ${isBaby ? 'text-gray-400 mb-2' : 'text-gray-600 mb-3'}`}>{label}</div>
+        <div style={{
+          fontSize: '10px',
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em',
+          color: isBaby ? '#9ca3af' : '#6b7280',
+          marginBottom: '4px',
+        }}>{label}</div>
 
         {/* Teeth row */}
-        <div className="flex gap-5 justify-center" style={{ transform: `scale(${scale})` }}>
+        <div className="flex justify-center" style={{ gap: '3px', transform: `scale(${scale})`, transformOrigin: 'top center' }}>
           {toothNumbers.map(numero => {
             const diente = dienteMap.get(numero) || getDefaultDiente(numero)
             return (
-              <div
-                key={numero}
-                className="transition-transform hover:scale-105"
-              >
+              <div key={numero}>
                 <ToothSVG
                   numero={numero}
                   diente={diente}
@@ -134,38 +137,47 @@ export default function OdontogramaSVG({ dientes, mode, onDientesChange }: Odont
   }
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full" style={{ maxWidth: '720px', margin: '0 auto' }}>
       {/* Odontogram grid */}
-      <div className="bg-gradient-to-b from-white via-white to-gray-50 rounded-3xl border-2 border-gray-200 p-12 overflow-x-auto shadow-md">
+      <div style={{
+        background: 'white',
+        border: '1px solid #e5e7eb',
+        borderRadius: '12px',
+        padding: '20px 16px',
+        overflowX: 'auto',
+      }}>
         {/* Upper arch */}
-        <div className="mb-12">
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-azure/15 via-azure/10 to-deep/10 rounded-2xl border border-azure/20 shadow-sm">
-              <span className="text-2xl">🦷</span>
-              <span className="text-base font-bold text-deep uppercase tracking-widest">Maxilar Superior</span>
-            </div>
+        <div style={{ marginBottom: '8px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              fontSize: '13px', fontWeight: 700, color: '#0d3d5c',
+              textTransform: 'uppercase', letterSpacing: '0.08em',
+              background: '#f0f9ff', border: '1px solid #bae6fd',
+              borderRadius: '8px', padding: '4px 14px',
+            }}>🦷 Maxilar Superior</span>
           </div>
           {renderArchRow(UPPER_PERMANENT, 'ADULTOS', false)}
           {renderArchRow(UPPER_BABY, 'TEMPORALES', true)}
         </div>
 
         {/* Divider */}
-        <div className="flex items-center gap-6 my-12 px-4">
-          <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-azure/30 to-transparent rounded-full" />
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-xs font-bold text-azure/60 px-4 uppercase tracking-wider">Línea</span>
-            <span className="text-xs font-bold text-azure/60 px-4 uppercase tracking-wider">Media</span>
-          </div>
-          <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-azure/30 to-transparent rounded-full" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '10px 8px' }}>
+          <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
+          <span style={{ fontSize: '11px', color: '#9ca3af', whiteSpace: 'nowrap', fontWeight: 500 }}>LÍNEA MEDIA</span>
+          <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
         </div>
 
         {/* Lower arch */}
-        <div>
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-deep/10 via-azure/10 to-azure/15 rounded-2xl border border-azure/20 shadow-sm">
-              <span className="text-2xl">🦷</span>
-              <span className="text-base font-bold text-deep uppercase tracking-widest">Mandíbula Inferior</span>
-            </div>
+        <div style={{ marginTop: '8px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              fontSize: '13px', fontWeight: 700, color: '#0d3d5c',
+              textTransform: 'uppercase', letterSpacing: '0.08em',
+              background: '#f0f9ff', border: '1px solid #bae6fd',
+              borderRadius: '8px', padding: '4px 14px',
+            }}>🦷 Mandíbula Inferior</span>
           </div>
           {renderArchRow(LOWER_BABY, 'TEMPORALES', true)}
           {renderArchRow(LOWER_PERMANENT, 'ADULTOS', false)}
@@ -215,11 +227,19 @@ export default function OdontogramaSVG({ dientes, mode, onDientesChange }: Odont
 
       {/* Edit popover overlay */}
       {popover.visible && mode === 'edit' && (
-        <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setPopover({ ...popover, visible: false })} />
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" style={{ zIndex: 9998 }} onClick={() => setPopover({ ...popover, visible: false })} />
       )}
 
       {popover.visible && mode === 'edit' && (
-        <div className="fixed z-50 bg-white rounded-2xl shadow-2xl border border-gray-200 p-5 w-80" style={{ top: `${popover.y + 10}px`, left: `${popover.x + 10}px` }}>
+        <div
+          className="fixed bg-white rounded-2xl border border-gray-200 p-5 w-80"
+          style={{
+            top: `${popover.y + 10}px`,
+            left: `${Math.min(popover.x + 10, window.innerWidth - 330)}px`,
+            zIndex: 9999,
+            boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+          }}
+        >
           {/* Header */}
           <div className="mb-5 pb-4 border-b border-gray-100">
             <h3 className="font-serif font-bold text-lg text-deep mb-1">
@@ -234,15 +254,16 @@ export default function OdontogramaSVG({ dientes, mode, onDientesChange }: Odont
           <div className="mb-5">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-1 h-4 bg-red-500 rounded-full"></div>
-              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">Patología</p>
+              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">🦷 Patología</p>
             </div>
             <div className="grid grid-cols-2 gap-2">
               {SIMBOLOS_ROJO.map(simbolo => (
                 <button
                   key={simbolo}
                   onClick={() => handleSymbolSelect(simbolo, 'rojo')}
-                  className="px-3 py-2.5 text-xs font-medium border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition-all hover:border-red-400 hover:shadow-sm"
                   title={SIMBOLO_LABELS[simbolo]}
+                  style={{ padding: '10px 18px', borderRadius: '10px', cursor: 'pointer' }}
+                  className="text-xs font-medium border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 transition-all hover:border-red-400 hover:shadow-sm"
                 >
                   {SIMBOLO_LABELS[simbolo]}
                 </button>
@@ -254,15 +275,16 @@ export default function OdontogramaSVG({ dientes, mode, onDientesChange }: Odont
           <div className="mb-5">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
-              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">Tratamiento</p>
+              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">✨ Tratamiento</p>
             </div>
             <div className="grid grid-cols-2 gap-2">
               {SIMBOLOS_AZUL.map(simbolo => (
                 <button
                   key={simbolo}
                   onClick={() => handleSymbolSelect(simbolo, 'azul')}
-                  className="px-3 py-2.5 text-xs font-medium border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-all hover:border-blue-400 hover:shadow-sm"
                   title={SIMBOLO_LABELS[simbolo]}
+                  style={{ padding: '10px 18px', borderRadius: '10px', cursor: 'pointer' }}
+                  className="text-xs font-medium border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 transition-all hover:border-blue-400 hover:shadow-sm"
                 >
                   {SIMBOLO_LABELS[simbolo]}
                 </button>
@@ -274,13 +296,15 @@ export default function OdontogramaSVG({ dientes, mode, onDientesChange }: Odont
           <div className="flex gap-2 pt-3 border-t border-gray-100">
             <button
               onClick={handleClear}
-              className="flex-1 px-3 py-2 text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all"
+              style={{ padding: '10px 18px', borderRadius: '10px', background: '#f3f4f6', color: '#6b7280', cursor: 'pointer', flex: 1 }}
+              className="text-xs font-medium hover:bg-gray-200 transition-all border-0"
             >
               🔄 Limpiar
             </button>
             <button
               onClick={() => setPopover({ ...popover, visible: false })}
-              className="flex-1 px-3 py-2 text-xs font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg transition-all"
+              style={{ padding: '10px 18px', borderRadius: '10px', background: '#fee2e2', color: '#dc2626', cursor: 'pointer', flex: 1 }}
+              className="text-xs font-medium hover:bg-red-200 transition-all border-0"
             >
               ✕ Cerrar
             </button>

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { supabase, DEMO_MODE } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
+import LogoMarnieDiaz from '../assets/LogoMarnieDiaz.png'
 
 export default function Login() {
   const { session } = useAuth()
@@ -30,7 +31,11 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ice via-white to-accent/30 px-4">
       <div className="w-full max-w-md">
         {/* Card */}
-        <div className="bg-white rounded-3xl shadow-2xl shadow-azure/10 border border-accent/30 overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-2xl shadow-azure/10 border border-accent/30 overflow-hidden" style={{position:"relative"}}>
+          {/* Logo top-left */}
+          <div style={{position:"absolute",top:"12px",left:"16px",zIndex:10}}>
+            <img src={LogoMarnieDiaz} alt="Marnie Díaz Odontología" style={{height:"32px",width:"auto",objectFit:"contain",filter:"brightness(0) invert(1)"}} />
+          </div>
           {/* Header */}
           <div className="bg-gradient-to-br from-deep to-azure p-8 text-center">
             <div className="w-16 h-16 bg-white/15 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
