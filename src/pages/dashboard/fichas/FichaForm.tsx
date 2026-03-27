@@ -93,23 +93,9 @@ export default function FichaForm() {
         }
       })
 
-    // Load current odontogram
-    supabase.from('odontograma').select('*').eq('paciente_id', pacienteId)
-      .then(({ data }: { data: any[] | null }) => {
-        if (data && data.length > 0) {
-          const base = getDefaultOdontograma()
-          for (const record of data) {
-            if (record.superficies) {
-              const idx = base.findIndex(d => d.numero === record.diente_numero)
-              if (idx >= 0) base[idx] = { numero: record.diente_numero, superficies: record.superficies, notas: record.notas }
-            }
-          }
-          setDientes(base)
-        }
-      })
-
-    // If editing, load existing ficha
+    // Load odontogram from latest ficha (if creating new) or from current ficha (if editing)
     if (!isNew && fichaId) {
+      // Editing: load existing ficha
       supabase.from('fichas_clinicas').select('*').eq('id', fichaId).single()
         .then(({ data }: { data: FichaClinica | null }) => {
           if (data) {
@@ -122,6 +108,35 @@ export default function FichaForm() {
             if (data.odontograma_snapshot) setDientes(data.odontograma_snapshot)
             if (data.indicadores_salud) setIndicadores(data.indicadores_salud)
             setObservaciones(data.observaciones)
+          }
+        })
+    } else {
+      // Creating new ficha: load from latest ficha snapshot for continuity
+      supabase
+        .from('fichas_clinicas')
+        .select('odontograma_snapshot')
+        .eq('paciente_id', pacienteId)
+        .order('fecha', { ascending: false })
+        .limit(1)
+        .then(({ data }: { data: any[] | null }) => {
+          if (data && data.length > 0 && data[0].odontograma_snapshot?.length > 0) {
+            // Use latest ficha's odontogram as starting point for continuity
+            setDientes(data[0].odontograma_snapshot)
+          } else {
+            // Fallback: load from global odontogram table if no previous ficha exists
+            supabase.from('odontograma').select('*').eq('paciente_id', pacienteId)
+              .then(({ data: odontoData }: { data: any[] | null }) => {
+                if (odontoData && odontoData.length > 0) {
+                  const base = getDefaultOdontograma()
+                  for (const record of odontoData) {
+                    if (record.superficies) {
+                      const idx = base.findIndex(d => d.numero === record.diente_numero)
+                      if (idx >= 0) base[idx] = { numero: record.diente_numero, superficies: record.superficies, notas: record.notas }
+                    }
+                  }
+                  setDientes(base)
+                }
+              })
           }
         })
     }
