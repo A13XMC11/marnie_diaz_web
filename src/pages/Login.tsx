@@ -9,6 +9,7 @@ export default function Login() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [remember, setRemember] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -28,104 +29,291 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ice via-white to-accent/30 px-4">
-      <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-3xl shadow-2xl shadow-azure/10 border border-accent/30 overflow-hidden" style={{position:"relative"}}>
-          {/* Logo top-left */}
-          <div style={{position:"absolute",top:"12px",left:"16px",zIndex:10}}>
-            <img src={LogoMarnieDiaz} alt="Marnie Díaz Odontología" style={{height:"32px",width:"auto",objectFit:"contain",filter:"brightness(0) invert(1)"}} />
-          </div>
-          {/* Header */}
-          <div className="bg-gradient-to-br from-deep to-azure p-8 text-center">
-            <div className="w-16 h-16 bg-white/15 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <h1 className="text-white font-serif text-2xl font-semibold">Panel Administrativo</h1>
-            <p className="text-white/60 text-sm mt-1">Marnie Díaz Odontología & Estética</p>
-          </div>
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: '#f0f4f8',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px 16px',
+      fontFamily: "'DM Sans', system-ui, sans-serif",
+      position: 'relative',
+    }}>
+      {/* Logo en esquina superior izquierda de la página */}
+      <div style={{ position: 'fixed', top: '20px', left: '24px', zIndex: 10 }}>
+        <img
+          src={LogoMarnieDiaz}
+          alt="Marnie Díaz Odontología"
+          style={{ height: '40px', width: 'auto', objectFit: 'contain' }}
+        />
+      </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="p-8 space-y-5">
-            {DEMO_MODE && (
-              <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4">
-                <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-2">✨ Modo Demo Activo</p>
-                <p className="text-xs text-amber-700 mb-3">Usa estas credenciales de prueba:</p>
-                <button
-                  type="button"
-                  onClick={() => { setEmail('admin@marniediaz.com'); setPassword('demo1234') }}
-                  className="w-full bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-lg p-2.5 text-xs text-left transition-colors"
-                >
-                  <div className="font-mono text-amber-800">admin@marniediaz.com</div>
-                  <div className="font-mono text-amber-800">demo1234</div>
-                  <div className="text-amber-600 mt-1">← Click para autocompletar</div>
-                </button>
-              </div>
-            )}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Correo electrónico</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                placeholder="admin@example.com"
-                className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl text-sm text-gray-700 outline-none focus:border-azure transition-colors bg-white"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Contraseña</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-                className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl text-sm text-gray-700 outline-none focus:border-azure transition-colors bg-white"
-              />
-            </div>
-
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
-                <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-azure hover:bg-deep text-white font-medium py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-0.5 hover:shadow-lg hover:shadow-azure/30"
-            >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                  Iniciando sesión...
-                </>
-              ) : 'Iniciar sesión'}
-            </button>
-
-            <p className="text-center text-xs text-gray-400 pt-2">
-              <Link to="/" className="text-azure hover:text-deep transition-colors">← Volver al sitio público</Link>
-            </p>
-          </form>
-        </div>
-
+      <div style={{ width: '100%', maxWidth: '440px' }}>
+        {/* Banner demo ENCIMA de la card */}
         {DEMO_MODE && (
-          <p className="text-center text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 mt-4 font-medium">
-            🛠 Modo demo — sin conexión real a Supabase
-          </p>
+          <div style={{
+            backgroundColor: '#fefce8',
+            border: '1px solid #fde68a',
+            borderRadius: '8px',
+            padding: '10px 16px',
+            marginBottom: '16px',
+            color: '#92400e',
+            fontSize: '13px',
+            lineHeight: '1.5',
+          }}>
+            <strong>Modo Demo activo.</strong>{' '}
+            <button
+              type="button"
+              onClick={() => { setEmail('admin@marniediaz.com'); setPassword('demo1234') }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#92400e',
+                textDecoration: 'underline',
+                cursor: 'pointer',
+                padding: 0,
+                font: 'inherit',
+              }}
+            >
+              Autocompletar credenciales de prueba
+            </button>
+          </div>
         )}
-        {!DEMO_MODE && (
-          <p className="text-center text-xs text-gray-400 mt-6">
-            Acceso exclusivo para administración clínica
+
+        {/* Card */}
+        <div style={{
+          backgroundColor: '#ffffff',
+          borderRadius: '12px',
+          padding: '40px 48px',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+          width: '100%',
+          boxSizing: 'border-box',
+        }}>
+          {/* Encabezado */}
+          <p style={{ color: '#6b7280', fontSize: '14px', margin: '0 0 6px 0' }}>
+            Bienvenida de nuevo
           </p>
-        )}
+          <h1 style={{
+            color: '#111827',
+            fontSize: '28px',
+            fontWeight: 700,
+            margin: '0',
+            lineHeight: '1.2',
+          }}>
+            Panel Administrativo
+          </h1>
+
+          <div style={{ height: '28px' }} />
+
+          {/* Campo correo */}
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{
+              display: 'block',
+              color: '#374151',
+              fontSize: '13px',
+              fontWeight: 500,
+              marginBottom: '6px',
+            }}>
+              Correo electrónico
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              placeholder="tucorreo@marniediaz.com"
+              style={{
+                width: '100%',
+                backgroundColor: '#ffffff',
+                border: '1.5px solid #d1d5db',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                fontSize: '14px',
+                color: '#111827',
+                outline: 'none',
+                boxSizing: 'border-box',
+                transition: 'border-color 0.15s',
+                fontFamily: 'inherit',
+                colorScheme: 'light',
+              }}
+              onFocus={e => (e.target.style.borderColor = '#1a6fa8')}
+              onBlur={e => (e.target.style.borderColor = '#d1d5db')}
+            />
+          </div>
+
+          {/* Campo contraseña */}
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{
+              display: 'block',
+              color: '#374151',
+              fontSize: '13px',
+              fontWeight: 500,
+              marginBottom: '6px',
+            }}>
+              Contraseña
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+              style={{
+                width: '100%',
+                backgroundColor: '#ffffff',
+                border: '1.5px solid #d1d5db',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                fontSize: '14px',
+                color: '#111827',
+                outline: 'none',
+                boxSizing: 'border-box',
+                transition: 'border-color 0.15s',
+                fontFamily: 'inherit',
+                colorScheme: 'light',
+              }}
+              onFocus={e => (e.target.style.borderColor = '#1a6fa8')}
+              onBlur={e => (e.target.style.borderColor = '#d1d5db')}
+            />
+          </div>
+
+          {/* Fila recordar / olvidé contraseña */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '0',
+          }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: '#6b7280',
+              fontSize: '13px',
+              cursor: 'pointer',
+              userSelect: 'none',
+            }}>
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={e => setRemember(e.target.checked)}
+                style={{ accentColor: '#1a6fa8', width: '14px', height: '14px', colorScheme: 'light' }}
+              />
+              Recordar por 30 días
+            </label>
+            <a
+              href="#"
+              style={{ color: '#1a6fa8', fontSize: '13px', textDecoration: 'none' }}
+              onMouseEnter={e => ((e.target as HTMLElement).style.textDecoration = 'underline')}
+              onMouseLeave={e => ((e.target as HTMLElement).style.textDecoration = 'none')}
+            >
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div style={{
+              marginTop: '16px',
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '8px',
+              padding: '10px 14px',
+              color: '#dc2626',
+              fontSize: '13px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}>
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20" style={{ flexShrink: 0 }}>
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              {error}
+            </div>
+          )}
+
+          <div style={{ height: '24px' }} />
+
+          {/* Botón principal */}
+          <LoginButton loading={loading} onClick={handleSubmit} />
+
+          <div style={{ height: '12px' }} />
+
+          {/* Botón volver */}
+          <Link
+            to="/"
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '13px',
+              borderRadius: '8px',
+              border: '1.5px solid #d1d5db',
+              backgroundColor: '#ffffff',
+              color: '#374151',
+              fontSize: '15px',
+              fontWeight: 500,
+              textAlign: 'center',
+              textDecoration: 'none',
+              boxSizing: 'border-box',
+              transition: 'background-color 0.2s',
+              fontFamily: 'inherit',
+            }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.backgroundColor = '#f9fafb')}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.backgroundColor = '#ffffff')}
+          >
+            ← Volver al sitio público
+          </Link>
+        </div>
       </div>
     </div>
+  )
+}
+
+function LoginButton({ loading, onClick }: { loading: boolean; onClick: (e: React.FormEvent) => void }) {
+  const [hovered, setHovered] = useState(false)
+
+  return (
+    <button
+      type="submit"
+      disabled={loading}
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: '100%',
+        padding: '13px',
+        borderRadius: '8px',
+        border: 'none',
+        backgroundColor: hovered ? '#0d3d5c' : '#1a6fa8',
+        color: '#ffffff',
+        fontSize: '15px',
+        fontWeight: 500,
+        cursor: loading ? 'not-allowed' : 'pointer',
+        opacity: loading ? 0.65 : 1,
+        transition: 'all 0.2s',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        fontFamily: 'inherit',
+        boxSizing: 'border-box',
+      }}
+    >
+      {loading ? (
+        <>
+          <span style={{
+            display: 'inline-block',
+            width: '14px',
+            height: '14px',
+            border: '2px solid rgba(255,255,255,0.4)',
+            borderTopColor: '#ffffff',
+            borderRadius: '50%',
+            animation: 'spin 0.7s linear infinite',
+          }} />
+          Iniciando sesión...
+        </>
+      ) : 'Iniciar sesión'}
+    </button>
   )
 }
