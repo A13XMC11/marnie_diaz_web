@@ -3,6 +3,7 @@ import MarnieDiaz from './Odonto-Web.jsx'
 import Login from './pages/Login'
 import ProtectedRoute from './components/ProtectedRoute'
 import DashboardLayout from './layouts/DashboardLayout'
+import Dashboard from './pages/dashboard/Dashboard'
 import Pacientes from './pages/dashboard/Pacientes'
 import PacienteDetalle from './pages/dashboard/PacienteDetalle'
 import Citas from './pages/dashboard/Citas'
@@ -29,7 +30,7 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Navigate to="pacientes" replace />} />
+        <Route index element={<Dashboard />} />
         <Route path="pacientes" element={<Pacientes />} />
         <Route path="pacientes/:id" element={<PacienteDetalle />} />
         <Route path="pacientes/:id/fichas/nueva" element={<FichaForm />} />
