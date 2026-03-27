@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 
 interface Cita {
@@ -12,6 +13,7 @@ const ESTADOS = ['programada','confirmada','completada','cancelada'] as const
 const emptyForm = { paciente_id:'', fecha:'', hora:'08:30', motivo:'', estado:'programada' as string, notas:'' }
 
 export default function Citas() {
+  const navigate = useNavigate()
   const [citas, setCitas] = useState<Cita[]>([])
   const [pacientes, setPacientes] = useState<Paciente[]>([])
   const [loading, setLoading] = useState(true)
@@ -53,7 +55,12 @@ export default function Citas() {
   const cambiarEstado = async (id: string, estado: string) => {
     const { error: dbError } = await supabase.from('citas').update({ estado }).eq('id', id)
     if (dbError) { alert(dbError.message); return }
-    fetchData()
+    // Navigate to CitaDetalle when marking as completada
+    if (estado === 'completada') {
+      navigate(`/dashboard/citas/${id}`)
+    } else {
+      fetchData()
+    }
   }
 
   const filtered = citas.filter(c => filtroEstado === 'todos' || c.estado === filtroEstado)
@@ -102,13 +109,19 @@ export default function Citas() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-gray-800">{c.pacientes ? `${c.pacientes.nombre} ${c.pacientes.apellido}` : 'Paciente'}</span>
+                  <Link
+                    to={`/dashboard/pacientes/${c.paciente_id}`}
+                    className="font-semibold text-azure hover:text-deep transition-colors"
+                  >
+                    {c.pacientes ? `${c.pacientes.nombre} ${c.pacientes.apellido}` : 'Paciente'}
+                  </Link>
                   <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium capitalize ${estadoClasses[c.estado] ?? 'bg-gray-100 text-gray-600'}`}>{c.estado}</span>
                 </div>
                 <p className="text-sm text-gray-600 mt-0.5">{c.motivo || 'Sin motivo especificado'}</p>
                 {c.notas && <p className="text-xs text-gray-400 mt-1 italic">{c.notas}</p>}
               </div>
               <div className="flex flex-col gap-2 flex-shrink-0">
+                <Link to={`/dashboard/citas/${c.id}`} className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg transition-all text-center">Ver detalle</Link>
                 <button onClick={() => openEdit(c)} className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition-all">Editar</button>
                 {c.estado !== 'completada' && c.estado !== 'cancelada' && (
                   <button onClick={() => cambiarEstado(c.id, c.estado === 'programada' ? 'confirmada' : 'completada')}

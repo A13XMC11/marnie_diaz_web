@@ -80,6 +80,7 @@ export interface IndicadoresSaludBucal {
 export interface FichaClinica {
   id: string
   paciente_id: string
+  cita_id?: string // opcional: link a la cita de esta visita
   fecha: string // ISO date YYYY-MM-DD
   motivo_consulta: string
   enfermedad_actual: string // síntomas, cronología, localización, etc.

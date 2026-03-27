@@ -16,8 +16,8 @@ interface Paciente {
   direccion: string; alergias: string; antecedentes: string
 }
 interface Cita { id: string; fecha: string; hora: string; motivo: string; estado: string; notas: string }
-interface Procedimiento { id: string; tipo: string; descripcion: string; costo: number; fecha: string; estado: string }
-interface Pago { id: string; monto: number; fecha: string; metodo_pago: string; estado: string; notas: string }
+interface Procedimiento { id: string; tipo: string; descripcion: string; costo: number; fecha: string; estado: string; cita_id?: string }
+interface Pago { id: string; monto: number; fecha: string; metodo_pago: string; estado: string; notas: string; cita_id?: string }
 
 const tabs = ['Fichas', 'Datos', 'Citas', 'Procedimientos', 'Pagos', 'Odontograma'] as const
 type Tab = typeof tabs[number]
@@ -176,6 +176,7 @@ export default function PacienteDetalle() {
                   <p className="text-sm text-gray-500 mt-0.5">🕐 {c.hora}</p>
                   {c.notas && <p className="text-sm text-gray-600 mt-1 italic">"{c.notas}"</p>}
                 </div>
+                <Link to={`/dashboard/citas/${c.id}`} className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg transition-all whitespace-nowrap">Ver detalle →</Link>
               </div>
             ))
           }
@@ -186,20 +187,28 @@ export default function PacienteDetalle() {
       {tab === 'Procedimientos' && (
         <div className="space-y-3">
           {procedimientos.length === 0 ? <div className="text-center py-12 text-gray-400"><div className="text-3xl mb-2">🔬</div><p>Sin procedimientos registrados</p></div> :
-            procedimientos.map(pr => (
-              <div key={pr.id} className="bg-white rounded-xl border border-gray-100 p-4 flex items-start gap-4 shadow-sm">
-                <div><div className="font-semibold text-gray-800">{pr.tipo}</div>
-                  {pr.descripcion && <p className="text-sm text-gray-500 mt-0.5">{pr.descripcion}</p>}
-                  <div className="flex gap-3 mt-2 text-xs text-gray-400">
-                    <span>{formatDate(pr.fecha)}</span>
-                    <span className={`px-2 py-0.5 rounded-full ${pr.estado==='realizado'?'bg-green-100 text-green-700':pr.estado==='cancelado'?'bg-red-100 text-red-700':'bg-yellow-100 text-yellow-700'}`}>{pr.estado}</span>
+            procedimientos.map(pr => {
+              const citaAsociada = pr.cita_id ? citas.find(c => c.id === pr.cita_id) : null
+              return (
+                <div key={pr.id} className="bg-white rounded-xl border border-gray-100 p-4 flex items-start gap-4 shadow-sm">
+                  <div><div className="font-semibold text-gray-800">{pr.tipo}</div>
+                    {pr.descripcion && <p className="text-sm text-gray-500 mt-0.5">{pr.descripcion}</p>}
+                    <div className="flex gap-2 mt-2 text-xs flex-wrap">
+                      <span className="text-gray-400">{formatDate(pr.fecha)}</span>
+                      <span className={`px-2 py-0.5 rounded-full ${pr.estado==='realizado'?'bg-green-100 text-green-700':pr.estado==='cancelado'?'bg-red-100 text-red-700':'bg-yellow-100 text-yellow-700'}`}>{pr.estado}</span>
+                      {citaAsociada && (
+                        <Link to={`/dashboard/citas/${pr.cita_id}`} className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
+                          Cita {formatDate(citaAsociada.fecha)}
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                  <div className="ml-auto text-right">
+                    <div className="font-bold text-deep text-lg">${pr.costo?.toFixed(2)}</div>
                   </div>
                 </div>
-                <div className="ml-auto text-right">
-                  <div className="font-bold text-deep text-lg">${pr.costo?.toFixed(2)}</div>
-                </div>
-              </div>
-            ))
+              )
+            })
           }
         </div>
       )}
@@ -217,19 +226,30 @@ export default function PacienteDetalle() {
           </div>
           <div className="space-y-3">
             {pagos.length === 0 ? <div className="text-center py-12 text-gray-400"><div className="text-3xl mb-2">💳</div><p>Sin pagos registrados</p></div> :
-              pagos.map(pa => (
-                <div key={pa.id} className="bg-white rounded-xl border border-gray-100 p-4 flex items-center gap-4 shadow-sm">
-                  <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-lg">💳</div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-gray-800">{pa.metodo_pago}</div>
-                    <div className="text-xs text-gray-400">{formatDate(pa.fecha)} {pa.notas && `· ${pa.notas}`}</div>
+              pagos.map(pa => {
+                const citaAsociada = pa.cita_id ? citas.find(c => c.id === pa.cita_id) : null
+                return (
+                  <div key={pa.id} className="bg-white rounded-xl border border-gray-100 p-4 flex items-center gap-4 shadow-sm">
+                    <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-lg">💳</div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-gray-800">{pa.metodo_pago}</div>
+                      <div className="text-xs text-gray-400 flex items-center gap-2 flex-wrap">
+                        <span>{formatDate(pa.fecha)}</span>
+                        {pa.notas && <span>· {pa.notas}</span>}
+                        {citaAsociada && (
+                          <Link to={`/dashboard/citas/${pa.cita_id}`} className="text-blue-600 hover:text-blue-700 underline">
+                            Cita {formatDate(citaAsociada.fecha)}
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-lg text-deep">${pa.monto?.toFixed(2)}</div>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${pa.estado==='pagado'?'bg-green-100 text-green-700':pa.estado==='pendiente'?'bg-amber-100 text-amber-700':'bg-blue-100 text-blue-700'}`}>{pa.estado}</span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-bold text-lg text-deep">${pa.monto?.toFixed(2)}</div>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${pa.estado==='pagado'?'bg-green-100 text-green-700':pa.estado==='pendiente'?'bg-amber-100 text-amber-700':'bg-blue-100 text-blue-700'}`}>{pa.estado}</span>
-                  </div>
-                </div>
-              ))
+                )
+              })
             }
           </div>
         </div>

@@ -9,6 +9,7 @@ import Citas from './pages/dashboard/Citas'
 import Procedimientos from './pages/dashboard/Procedimientos'
 import Pagos from './pages/dashboard/Pagos'
 import Odontograma from './pages/dashboard/Odontograma'
+import CitaDetalle from './pages/dashboard/CitaDetalle'
 import FichaForm from './pages/dashboard/fichas/FichaForm'
 import FichaDetalle from './pages/dashboard/fichas/FichaDetalle'
 
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="pacientes/:id/fichas/:fichaId" element={<FichaDetalle />} />
         <Route path="pacientes/:id/fichas/:fichaId/edit" element={<FichaForm />} />
         <Route path="citas" element={<Citas />} />
+        <Route path="citas/:citaId" element={<CitaDetalle />} />
         <Route path="procedimientos" element={<Procedimientos />} />
         <Route path="pagos" element={<Pagos />} />
         <Route path="odontograma" element={<Odontograma />} />

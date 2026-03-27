@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import OdontogramaSVG from '../../../components/odontograma/OdontogramaSVG'
 import { getDefaultOdontograma, normalizeDientes } from '../../../components/odontograma/odontogramaUtils'
@@ -42,15 +42,21 @@ function SectionHeader({ number, title, icon }: { number: string; title: string;
 export default function FichaForm() {
   const { id: pacienteId, fichaId } = useParams()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const isNew = !fichaId
+
+  // Query params from CitaDetalle
+  const citaIdFromUrl = searchParams.get('cita_id')
+  const motivoFromUrl = searchParams.get('motivo')
+  const fechaFromUrl = searchParams.get('fecha')
 
   const [paciente, setPaciente] = useState<Paciente | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
   // Section 1 — Datos de consulta
-  const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0])
-  const [motivoConsulta, setMotivoConsulta] = useState('')
+  const [fecha, setFecha] = useState(fechaFromUrl || new Date().toISOString().split('T')[0])
+  const [motivoConsulta, setMotivoConsulta] = useState(motivoFromUrl || '')
   const [enfermedadActual, setEnfermedadActual] = useState('')
   const [antecedentesVisita, setAntecedentesVisita] = useState('')
 
@@ -157,6 +163,7 @@ export default function FichaForm() {
 
     const payload = {
       paciente_id: pacienteId,
+      cita_id: citaIdFromUrl || null,
       fecha, motivo_consulta: motivoConsulta, enfermedad_actual: enfermedadActual,
       antecedentes_visita: antecedentesVisita, signos_vitales: signosVitales,
       examen_estomatognatico: examen, odontograma_snapshot: dientes,
@@ -169,7 +176,12 @@ export default function FichaForm() {
 
     setSaving(false)
     if (dbError) { setError('Error al guardar. Intenta de nuevo.'); return }
-    navigate(`/dashboard/pacientes/${pacienteId}`)
+    // If opened from CitaDetalle, navigate back to it; otherwise go to patient detail
+    if (citaIdFromUrl) {
+      navigate(`/dashboard/citas/${citaIdFromUrl}`)
+    } else {
+      navigate(`/dashboard/pacientes/${pacienteId}`)
+    }
   }
 
   return (
@@ -184,6 +196,11 @@ export default function FichaForm() {
             Volver
           </button>
           <h1 className="text-2xl font-serif font-bold text-deep">{isNew ? 'Nueva Ficha Clínica' : 'Editar Ficha'}</h1>
+          {citaIdFromUrl && (
+            <p className="text-sm text-blue-600 font-medium mt-1 bg-blue-50 px-3 py-1 rounded-lg inline-block">
+              📋 Ficha para la cita del {fechaFromUrl}
+            </p>
+          )}
           {paciente && (
             <p className="text-sm text-gray-500 mt-0.5">
               Paciente: {paciente.nombre} {paciente.apellido}

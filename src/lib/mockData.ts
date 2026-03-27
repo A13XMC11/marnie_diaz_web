@@ -43,11 +43,11 @@ export const DEMO_DATA: Record<string, object[]> = {
     { id: 'pr5', paciente_id: 'p4', cita_id: null, tipo: 'Consulta', descripcion: 'Evaluación inicial implante pieza 46', costo: 0.00, fecha: MAÑANA, estado: 'planificado', created_at: '2025-03-22T09:00:00Z', pacientes: { nombre: 'Roberto', apellido: 'Vásquez' } },
   ],
   pagos: [
-    { id: 'pa1', paciente_id: 'p1', monto: 45.00, fecha: '2025-03-10', metodo_pago: 'efectivo', estado: 'pagado', notas: 'Pago limpieza', created_at: '2025-03-10T11:00:00Z', pacientes: { nombre: 'Andrea', apellido: 'Rodríguez' } },
-    { id: 'pa2', paciente_id: 'p1', monto: 180.00, fecha: AYER, metodo_pago: 'transferencia', estado: 'pagado', notas: 'Blanqueamiento LED', created_at: '2025-03-22T10:00:00Z', pacientes: { nombre: 'Andrea', apellido: 'Rodríguez' } },
-    { id: 'pa3', paciente_id: 'p2', monto: 200.00, fecha: '2025-02-20', metodo_pago: 'efectivo', estado: 'pagado', notas: 'Abono prótesis', created_at: '2025-02-20T12:00:00Z', pacientes: { nombre: 'Carlos', apellido: 'Mendoza' } },
-    { id: 'pa4', paciente_id: 'p2', monto: 120.00, fecha: '2025-03-05', metodo_pago: 'tarjeta', estado: 'pendiente', notas: 'Saldo prótesis', created_at: '2025-03-05T10:00:00Z', pacientes: { nombre: 'Carlos', apellido: 'Mendoza' } },
-    { id: 'pa5', paciente_id: 'p3', monto: 75.00, fecha: HOY, metodo_pago: 'efectivo', estado: 'pendiente', notas: 'Abono endodoncia', created_at: '2025-03-23T08:00:00Z', pacientes: { nombre: 'Lucía', apellido: 'Pacheco' } },
+    { id: 'pa1', paciente_id: 'p1', cita_id: 'c6', monto: 45.00, fecha: '2025-03-10', metodo_pago: 'efectivo', estado: 'pagado', notas: 'Pago limpieza', created_at: '2025-03-10T11:00:00Z', pacientes: { nombre: 'Andrea', apellido: 'Rodríguez' } },
+    { id: 'pa2', paciente_id: 'p1', cita_id: 'c1', monto: 180.00, fecha: AYER, metodo_pago: 'transferencia', estado: 'pagado', notas: 'Blanqueamiento LED', created_at: '2025-03-22T10:00:00Z', pacientes: { nombre: 'Andrea', apellido: 'Rodríguez' } },
+    { id: 'pa3', paciente_id: 'p2', cita_id: null, monto: 200.00, fecha: '2025-02-20', metodo_pago: 'efectivo', estado: 'pagado', notas: 'Abono prótesis', created_at: '2025-02-20T12:00:00Z', pacientes: { nombre: 'Carlos', apellido: 'Mendoza' } },
+    { id: 'pa4', paciente_id: 'p2', cita_id: null, monto: 120.00, fecha: '2025-03-05', metodo_pago: 'tarjeta', estado: 'pendiente', notas: 'Saldo prótesis', created_at: '2025-03-05T10:00:00Z', pacientes: { nombre: 'Carlos', apellido: 'Mendoza' } },
+    { id: 'pa5', paciente_id: 'p3', cita_id: 'c3', monto: 75.00, fecha: HOY, metodo_pago: 'efectivo', estado: 'pendiente', notas: 'Abono endodoncia', created_at: '2025-03-23T08:00:00Z', pacientes: { nombre: 'Lucía', apellido: 'Pacheco' } },
   ],
   odontograma: [
     { id: 'od1', paciente_id: 'p1', diente_numero: 11, estado: 'obturado', notas: 'Resina clase IV', fecha: '2025-01-15', superficies: { mesial: { simbolo: 'sano', color: null }, distal: { simbolo: 'restauracion', color: 'azul' }, oclusal: { simbolo: 'restauracion', color: 'azul' }, vestibular: { simbolo: 'restauracion', color: 'azul' }, palatino: { simbolo: 'sano', color: null } } },
@@ -62,6 +62,7 @@ export const DEMO_DATA: Record<string, object[]> = {
     {
       id: 'f1',
       paciente_id: 'p1',
+      cita_id: 'c6',
       fecha: '2025-03-10',
       motivo_consulta: 'Control post-blanqueamiento dental',
       enfermedad_actual: 'Sensibilidad dental leve en caras vestibulares de incisivos. Inicio: inmediato post-blanqueamiento. Intensidad: 2/10.',
@@ -112,6 +113,7 @@ export const DEMO_DATA: Record<string, object[]> = {
     {
       id: 'f2',
       paciente_id: 'p1',
+      cita_id: null,
       fecha: '2025-02-05',
       motivo_consulta: 'Limpieza preventiva y profilaxis',
       enfermedad_actual: 'Paciente refiere ligera inflamación gingival. Niega dolor. Últimas 2 semanas descuidó higiene por trabajo intenso.',
@@ -162,6 +164,7 @@ export const DEMO_DATA: Record<string, object[]> = {
     {
       id: 'f3',
       paciente_id: 'p2',
+      cita_id: null,
       fecha: '2025-02-20',
       motivo_consulta: 'Evaluación prótesis parcial removible y control de caries activa',
       enfermedad_actual: 'Paciente reporta molestias al masticar con prótesis superior izquierda. Dolor mínimo en zona de pieza 46 con palpación.',
