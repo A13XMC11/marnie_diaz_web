@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
 
+const formatDate = (dateStr: string) =>
+  new Date(dateStr + 'T12:00:00').toLocaleDateString('es-EC', { day: '2-digit', month: 'short', year: 'numeric' })
+
 interface Pago {
   id: string; paciente_id: string; monto: number; fecha: string
   metodo_pago: string; estado: string; notas: string
@@ -19,6 +22,7 @@ export default function Pagos() {
   const [editing, setEditing] = useState<Pago | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
   const [filtroPaciente, setFiltroPaciente] = useState('')
   const [filtroEstado, setFiltroEstado] = useState('todos')
 
@@ -35,15 +39,17 @@ export default function Pagos() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  const openNew = () => { setEditing(null); setForm({...emptyForm, fecha:new Date().toISOString().split('T')[0]}); setShowModal(true) }
-  const openEdit = (pa: Pago) => { setEditing(pa); setForm({ paciente_id:pa.paciente_id, monto:pa.monto, fecha:pa.fecha, metodo_pago:pa.metodo_pago, estado:pa.estado, notas:pa.notas }); setShowModal(true) }
+  const openNew = () => { setEditing(null); setForm({...emptyForm, fecha:new Date().toISOString().split('T')[0]}); setError(''); setShowModal(true) }
+  const openEdit = (pa: Pago) => { setEditing(pa); setForm({ paciente_id:pa.paciente_id, monto:pa.monto, fecha:pa.fecha, metodo_pago:pa.metodo_pago, estado:pa.estado, notas:pa.notas }); setError(''); setShowModal(true) }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    if (editing) await supabase.from('pagos').update(form).eq('id', editing.id)
-    else await supabase.from('pagos').insert(form)
+    const { error: dbError } = editing
+      ? await supabase.from('pagos').update(form).eq('id', editing.id)
+      : await supabase.from('pagos').insert(form)
     setSaving(false)
+    if (dbError) { setError(dbError.message); return }
     setShowModal(false)
     fetchData()
   }
@@ -127,7 +133,7 @@ export default function Pagos() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-semibold text-gray-800">{pa.pacientes ? `${pa.pacientes.nombre} ${pa.pacientes.apellido}` : '—'}</div>
-                <div className="text-xs text-gray-400 mt-0.5 capitalize">{pa.metodo_pago} · {pa.fecha}</div>
+                <div className="text-xs text-gray-400 mt-0.5 capitalize">{pa.metodo_pago} · {formatDate(pa.fecha)}</div>
                 {pa.notas && <div className="text-xs text-gray-500 mt-0.5 italic">{pa.notas}</div>}
               </div>
               <div className="text-right flex-shrink-0">
@@ -177,6 +183,7 @@ export default function Pagos() {
                 </div>
               </div>
               <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Notas</label><textarea value={form.notas} onChange={e=>setForm({...form,notas:e.target.value})} rows={2} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure resize-none bg-white" placeholder="Concepto de pago, número de factura..."/></div>
+              {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-gray-200 text-gray-700 py-3 rounded-xl text-sm font-medium hover:bg-gray-50">Cancelar</button>
                 <button type="submit" disabled={saving} className="flex-1 bg-azure hover:bg-deep text-white py-3 rounded-xl text-sm font-medium transition-all disabled:opacity-60">{saving?'Guardando...':(editing?'Actualizar':'Registrar pago')}</button>

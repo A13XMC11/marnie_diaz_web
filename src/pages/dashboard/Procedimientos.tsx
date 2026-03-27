@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
 
+const formatDate = (dateStr: string) =>
+  new Date(dateStr + 'T12:00:00').toLocaleDateString('es-EC', { day: '2-digit', month: 'short', year: 'numeric' })
+
 interface Procedimiento {
   id: string; paciente_id: string; tipo: string; descripcion: string
   costo: number; fecha: string; estado: string
@@ -19,6 +22,7 @@ export default function Procedimientos() {
   const [editing, setEditing] = useState<Procedimiento | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
   const [filtroPaciente, setFiltroPaciente] = useState('')
 
   const fetchData = useCallback(async () => {
@@ -34,15 +38,17 @@ export default function Procedimientos() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  const openNew = () => { setEditing(null); setForm({...emptyForm, fecha: new Date().toISOString().split('T')[0]}); setShowModal(true) }
-  const openEdit = (pr: Procedimiento) => { setEditing(pr); setForm({ paciente_id:pr.paciente_id, tipo:pr.tipo, descripcion:pr.descripcion, costo:pr.costo, fecha:pr.fecha, estado:pr.estado }); setShowModal(true) }
+  const openNew = () => { setEditing(null); setForm({...emptyForm, fecha: new Date().toISOString().split('T')[0]}); setError(''); setShowModal(true) }
+  const openEdit = (pr: Procedimiento) => { setEditing(pr); setForm({ paciente_id:pr.paciente_id, tipo:pr.tipo, descripcion:pr.descripcion, costo:pr.costo, fecha:pr.fecha, estado:pr.estado }); setError(''); setShowModal(true) }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    if (editing) await supabase.from('procedimientos').update(form).eq('id', editing.id)
-    else await supabase.from('procedimientos').insert(form)
+    const { error: dbError } = editing
+      ? await supabase.from('procedimientos').update(form).eq('id', editing.id)
+      : await supabase.from('procedimientos').insert(form)
     setSaving(false)
+    if (dbError) { setError(dbError.message); return }
     setShowModal(false)
     fetchData()
   }
@@ -102,7 +108,7 @@ export default function Procedimientos() {
                     <div className="font-medium text-gray-800">{pr.tipo}</div>
                     {pr.descripcion && <div className="text-xs text-gray-400 mt-0.5 truncate max-w-[200px]">{pr.descripcion}</div>}
                   </td>
-                  <td className="px-5 py-4 text-gray-600">{pr.fecha}</td>
+                  <td className="px-5 py-4 text-gray-600">{formatDate(pr.fecha)}</td>
                   <td className="px-5 py-4 font-bold text-deep">${pr.costo?.toFixed(2)}</td>
                   <td className="px-5 py-4">
                     <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${pr.estado==='realizado'?'bg-green-100 text-green-700':pr.estado==='cancelado'?'bg-red-100 text-red-700':'bg-yellow-100 text-yellow-700'}`}>{pr.estado}</span>
@@ -154,6 +160,7 @@ export default function Procedimientos() {
                   </select>
                 </div>
               </div>
+              {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-gray-200 text-gray-700 py-3 rounded-xl text-sm font-medium hover:bg-gray-50">Cancelar</button>
                 <button type="submit" disabled={saving} className="flex-1 bg-azure hover:bg-deep text-white py-3 rounded-xl text-sm font-medium transition-all disabled:opacity-60">{saving ? 'Guardando...' : (editing ? 'Actualizar' : 'Crear')}</button>

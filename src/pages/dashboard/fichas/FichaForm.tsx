@@ -86,10 +86,15 @@ export default function FichaForm() {
 
     // Load patient data
     supabase.from('pacientes').select('*').eq('id', pacienteId).single()
-      .then(({ data }: { data: Paciente | null }) => {
+      .then(({ data, error: dbError }: { data: Paciente | null; error: { message: string } | null }) => {
+        if (dbError) { setError(dbError.message); return }
         if (data) {
           setPaciente(data)
-          setAntecedentesVisita(data.antecedentes ?? '')
+          // Only pre-fill antecedentes from the patient record when creating a new ficha.
+          // When editing, antecedentes_visita is loaded exclusively from the ficha record
+          // to avoid a race condition where the pacientes query resolves after the ficha
+          // query and overwrites the saved ficha value.
+          if (isNew) setAntecedentesVisita(data.antecedentes ?? '')
         }
       })
 
@@ -97,17 +102,18 @@ export default function FichaForm() {
     if (!isNew && fichaId) {
       // Editing: load existing ficha
       supabase.from('fichas_clinicas').select('*').eq('id', fichaId).single()
-        .then(({ data }: { data: FichaClinica | null }) => {
+        .then(({ data, error: dbError }: { data: FichaClinica | null; error: { message: string } | null }) => {
+          if (dbError) { setError(dbError.message); return }
           if (data) {
             setFecha(data.fecha)
             setMotivoConsulta(data.motivo_consulta)
-            setEnfermedadActual(data.enfermedad_actual)
-            setAntecedentesVisita(data.antecedentes_visita)
+            setEnfermedadActual(data.enfermedad_actual ?? '')
+            setAntecedentesVisita(data.antecedentes_visita ?? '')
             if (data.signos_vitales) setSignosVitales(data.signos_vitales)
             if (data.examen_estomatognatico) setExamen(data.examen_estomatognatico)
             if (data.odontograma_snapshot) setDientes(data.odontograma_snapshot)
             if (data.indicadores_salud) setIndicadores(data.indicadores_salud)
-            setObservaciones(data.observaciones)
+            setObservaciones(data.observaciones ?? '')
           }
         })
     } else {
@@ -118,14 +124,16 @@ export default function FichaForm() {
         .eq('paciente_id', pacienteId)
         .order('fecha', { ascending: false })
         .limit(1)
-        .then(({ data }: { data: any[] | null }) => {
+        .then(({ data, error: dbError }: { data: any[] | null; error: { message: string } | null }) => {
+          if (dbError) { setError(dbError.message); return }
           if (data && data.length > 0 && data[0].odontograma_snapshot?.length > 0) {
             // Use latest ficha's odontogram as starting point for continuity
             setDientes(data[0].odontograma_snapshot)
           } else {
             // Fallback: load from global odontogram table if no previous ficha exists
             supabase.from('odontograma').select('*').eq('paciente_id', pacienteId)
-              .then(({ data: odontoData }: { data: any[] | null }) => {
+              .then(({ data: odontoData, error: odontoError }: { data: any[] | null; error: { message: string } | null }) => {
+                if (odontoError) { setError(odontoError.message); return }
                 if (odontoData && odontoData.length > 0) {
                   const base = getDefaultOdontograma()
                   for (const record of odontoData) {

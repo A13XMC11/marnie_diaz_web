@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { Outlet, NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { DEMO_MODE } from '../lib/supabase'
 
@@ -87,9 +87,9 @@ function Breadcrumbs() {
         <div key={i} className="flex items-center gap-1">
           {i > 0 && <span className="text-gray-300">›</span>}
           {crumb.path ? (
-            <a href={crumb.path} className="text-gray-400 hover:text-azure transition-colors">
+            <Link to={crumb.path} className="text-gray-400 hover:text-azure transition-colors">
               {crumb.label}
-            </a>
+            </Link>
           ) : (
             <span className="text-gray-700 font-medium">{crumb.label}</span>
           )}
@@ -210,13 +210,13 @@ export default function DashboardLayout() {
           )}
 
           {/* Public site */}
-          <a
-            href="/"
+          <Link
+            to="/"
             className="text-xs text-gray-400 hover:text-azure font-medium flex items-center gap-1.5 transition-colors"
           >
             <Icons.Home />
             Sitio público
-          </a>
+          </Link>
 
           {/* User avatar with dropdown */}
           <div className="relative">

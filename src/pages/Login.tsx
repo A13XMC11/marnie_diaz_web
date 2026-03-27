@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Navigate } from 'react-router-dom'
+import { useNavigate, Navigate, Link } from 'react-router-dom'
 import { supabase, DEMO_MODE } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import LogoMarnieDiaz from '../assets/LogoMarnieDiaz.png'
@@ -110,7 +110,7 @@ export default function Login() {
             </button>
 
             <p className="text-center text-xs text-gray-400 pt-2">
-              <a href="/" className="text-azure hover:text-deep transition-colors">← Volver al sitio público</a>
+              <Link to="/" className="text-azure hover:text-deep transition-colors">← Volver al sitio público</Link>
             </p>
           </form>
         </div>

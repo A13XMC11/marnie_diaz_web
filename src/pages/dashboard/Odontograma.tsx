@@ -12,6 +12,7 @@ export default function Odontograma() {
   const [dientes, setDientes] = useState<DienteOdontograma[]>([])
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
     supabase.from('pacientes').select('id, nombre, apellido').order('apellido').then(({data}: {data: Paciente[] | null}) => setPacientes(data ?? []))
@@ -52,43 +53,32 @@ export default function Odontograma() {
     }
   }
 
-  const handleDientesChange = async (newDientes: DienteOdontograma[]) => {
+  const handleDientesChange = async (updated: DienteOdontograma[]) => {
     if (!selectedPaciente) return
-    setDientes(newDientes)
+    setDientes(updated)
 
-    // Save to database
+    // Find only the changed teeth (compare with current state)
+    const changedDientes = updated.filter((d, i) =>
+      JSON.stringify(d) !== JSON.stringify(dientes[i])
+    )
+
+    if (changedDientes.length === 0) return
+
+    const rows = changedDientes.map(d => ({
+      paciente_id: selectedPaciente,
+      diente_numero: d.numero,
+      superficies: d.superficies,
+      notas: d.notas ?? null,
+      fecha: new Date().toISOString().split('T')[0],
+    }))
+
     setSaving(true)
-    try {
-      for (const diente of newDientes) {
-        // Check if exists
-        const { data: existing } = await supabase.from('odontograma')
-          .select('id')
-          .eq('paciente_id', selectedPaciente)
-          .eq('diente_numero', diente.numero)
-          .single()
+    setSaveError(null)
+    const { error } = await supabase
+      .from('odontograma')
+      .upsert(rows, { onConflict: 'paciente_id,diente_numero' })
 
-        if (existing) {
-          await supabase.from('odontograma')
-            .update({
-              superficies: diente.superficies,
-              notas: diente.notas,
-              fecha: new Date().toISOString().split('T')[0],
-            })
-            .eq('id', existing.id)
-        } else {
-          await supabase.from('odontograma')
-            .insert({
-              paciente_id: selectedPaciente,
-              diente_numero: diente.numero,
-              superficies: diente.superficies,
-              notas: diente.notas,
-              fecha: new Date().toISOString().split('T')[0],
-            })
-        }
-      }
-    } catch (e) {
-      console.error('Error saving odontogram:', e)
-    }
+    if (error) setSaveError(error.message)
     setSaving(false)
   }
 
@@ -129,6 +119,11 @@ export default function Odontograma() {
           {saving && (
             <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700">
               ⏳ Guardando cambios...
+            </div>
+          )}
+          {saveError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
+              Error al guardar: {saveError}
             </div>
           )}
           <OdontogramaSVG

@@ -19,6 +19,7 @@ export default function Citas() {
   const [editing, setEditing] = useState<Cita | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
   const [filtroEstado, setFiltroEstado] = useState('todos')
 
   const fetchData = useCallback(async () => {
@@ -34,21 +35,24 @@ export default function Citas() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  const openNew = () => { setEditing(null); setForm({...emptyForm, fecha: new Date().toISOString().split('T')[0]}); setShowModal(true) }
-  const openEdit = (c: Cita) => { setEditing(c); setForm({ paciente_id:c.paciente_id, fecha:c.fecha, hora:c.hora, motivo:c.motivo, estado:c.estado, notas:c.notas }); setShowModal(true) }
+  const openNew = () => { setEditing(null); setForm({...emptyForm, fecha: new Date().toISOString().split('T')[0]}); setError(''); setShowModal(true) }
+  const openEdit = (c: Cita) => { setEditing(c); setForm({ paciente_id:c.paciente_id, fecha:c.fecha, hora:c.hora, motivo:c.motivo, estado:c.estado, notas:c.notas }); setError(''); setShowModal(true) }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    if (editing) await supabase.from('citas').update(form).eq('id', editing.id)
-    else await supabase.from('citas').insert(form)
+    const { error: dbError } = editing
+      ? await supabase.from('citas').update(form).eq('id', editing.id)
+      : await supabase.from('citas').insert(form)
     setSaving(false)
+    if (dbError) { setError(dbError.message); return }
     setShowModal(false)
     fetchData()
   }
 
   const cambiarEstado = async (id: string, estado: string) => {
-    await supabase.from('citas').update({ estado }).eq('id', id)
+    const { error: dbError } = await supabase.from('citas').update({ estado }).eq('id', id)
+    if (dbError) { alert(dbError.message); return }
     fetchData()
   }
 
@@ -113,7 +117,7 @@ export default function Citas() {
                   </button>
                 )}
                 {c.estado !== 'cancelada' && (
-                  <button onClick={() => cambiarEstado(c.id, 'cancelada')} className="text-xs bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg transition-all">Cancelar</button>
+                  <button onClick={() => { if (!confirm('¿Confirmar cancelación de esta cita?')) return; cambiarEstado(c.id, 'cancelada') }} className="text-xs bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg transition-all">Cancelar</button>
                 )}
               </div>
             </div>
@@ -148,6 +152,7 @@ export default function Citas() {
                 </select>
               </div>
               <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Notas</label><textarea value={form.notas} onChange={e=>setForm({...form,notas:e.target.value})} rows={2} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure resize-none bg-white" placeholder="Observaciones adicionales..."/></div>
+              {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-gray-200 text-gray-700 py-3 rounded-xl text-sm font-medium hover:bg-gray-50">Cancelar</button>
                 <button type="submit" disabled={saving} className="flex-1 bg-azure hover:bg-deep text-white py-3 rounded-xl text-sm font-medium transition-all disabled:opacity-60">{saving ? 'Guardando...' : (editing ? 'Actualizar' : 'Crear cita')}</button>

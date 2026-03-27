@@ -41,12 +41,18 @@ export default function FichaDetalle() {
   const navigate = useNavigate()
   const [ficha, setFicha] = useState<FichaClinica | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!fichaId) return
     supabase.from('fichas_clinicas').select('*').eq('id', fichaId).single()
-      .then(({ data }: { data: FichaClinica | null }) => {
-        setFicha(data)
+      .then(({ data, error: dbError }: { data: FichaClinica | null; error: { message: string } | null }) => {
+        if (dbError) setError(dbError.message)
+        else setFicha(data)
+        setLoading(false)
+      })
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : 'Error de red')
         setLoading(false)
       })
   }, [fichaId])
@@ -55,6 +61,15 @@ export default function FichaDetalle() {
     return (
       <div className="flex justify-center py-16">
         <div className="w-8 h-8 border-4 border-azure border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-red-500 mb-2">Error al cargar la ficha: {error}</p>
+        <button onClick={() => navigate(-1)} className="mt-4 text-azure hover:text-deep text-sm transition-colors">← Volver</button>
       </div>
     )
   }

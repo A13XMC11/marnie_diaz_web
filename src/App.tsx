@@ -33,6 +33,7 @@ export default function App() {
         <Route path="pacientes/:id" element={<PacienteDetalle />} />
         <Route path="pacientes/:id/fichas/nueva" element={<FichaForm />} />
         <Route path="pacientes/:id/fichas/:fichaId" element={<FichaDetalle />} />
+        <Route path="pacientes/:id/fichas/:fichaId/edit" element={<FichaForm />} />
         <Route path="citas" element={<Citas />} />
         <Route path="procedimientos" element={<Procedimientos />} />
         <Route path="pagos" element={<Pagos />} />

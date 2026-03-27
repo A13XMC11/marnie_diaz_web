@@ -47,20 +47,19 @@ export default function Pacientes() {
     e.preventDefault()
     setSaving(true)
     setError('')
-    if (editing) {
-      const { error } = await supabase.from('pacientes').update(form).eq('id', editing.id)
-      if (error) setError(error.message)
-    } else {
-      const { error } = await supabase.from('pacientes').insert(form)
-      if (error) setError(error.message)
-    }
+    const { error: dbError } = editing
+      ? await supabase.from('pacientes').update(form).eq('id', editing.id)
+      : await supabase.from('pacientes').insert(form)
     setSaving(false)
-    if (!error) { setShowModal(false); fetchPacientes() }
+    if (dbError) { setError(dbError.message); return }
+    setShowModal(false)
+    fetchPacientes()
   }
 
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar este paciente y toda su información?')) return
-    await supabase.from('pacientes').delete().eq('id', id)
+    const { error: dbError } = await supabase.from('pacientes').delete().eq('id', id)
+    if (dbError) { alert(dbError.message); return }
     fetchPacientes()
   }
 
@@ -123,7 +122,7 @@ export default function Pacientes() {
               <div className="flex items-center gap-4">
                 {/* Avatar */}
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-azure/20 to-sky/20 flex items-center justify-center text-azure font-bold text-sm font-serif flex-shrink-0">
-                  {p.nombre[0]}{p.apellido[0]}
+                  {p.nombre?.[0] ?? '?'}{p.apellido?.[0] ?? ''}
                 </div>
 
                 {/* Info */}

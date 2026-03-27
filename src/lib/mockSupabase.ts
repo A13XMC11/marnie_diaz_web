@@ -34,7 +34,8 @@ function saveSession(s: typeof DEMO_SESSION | null) {
 class MockQueryBuilder {
   private table: string
   private _filters: Array<{ col: string; val: unknown }> = []
-  private _order: { col: string; asc: boolean } | null = null
+  private _orders: Array<{ col: string; asc: boolean }> = []
+  private _limit: number | null = null
   private _single = false
   private _data: AnyObject[]
 
@@ -51,7 +52,12 @@ class MockQueryBuilder {
   }
 
   order(col: string, opts?: { ascending?: boolean }) {
-    this._order = { col, asc: opts?.ascending !== false }
+    this._orders.push({ col, asc: opts?.ascending !== false })
+    return this
+  }
+
+  limit(n: number) {
+    this._limit = n
     return this
   }
 
@@ -62,14 +68,18 @@ class MockQueryBuilder {
     for (const { col, val } of this._filters) {
       rows = rows.filter(r => r[col] === val)
     }
-    if (this._order) {
-      const { col, asc } = this._order
+    if (this._orders.length > 0) {
       rows.sort((a, b) => {
-        const av = String(a[col] ?? '')
-        const bv = String(b[col] ?? '')
-        return asc ? av.localeCompare(bv) : bv.localeCompare(av)
+        for (const { col, asc } of this._orders) {
+          const av = String(a[col] ?? '')
+          const bv = String(b[col] ?? '')
+          const cmp = asc ? av.localeCompare(bv) : bv.localeCompare(av)
+          if (cmp !== 0) return cmp
+        }
+        return 0
       })
     }
+    if (this._limit !== null) rows = rows.slice(0, this._limit)
     return rows
   }
 

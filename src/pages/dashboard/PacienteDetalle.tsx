@@ -2,6 +2,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import FichasList from './fichas/FichasList'
+
+const formatDate = (dateStr: string) =>
+  new Date(dateStr + 'T12:00:00').toLocaleDateString('es-EC', { day: '2-digit', month: 'short', year: 'numeric' })
+
 import OdontogramaSVG from '../../components/odontograma/OdontogramaSVG'
 import { getDefaultOdontograma } from '../../components/odontograma/odontogramaUtils'
 import type { FichaClinica, DienteOdontograma } from '../../types/fichas'
@@ -28,44 +32,51 @@ export default function PacienteDetalle() {
   const [dientesSVG, setDientesSVG] = useState<DienteOdontograma[]>(getDefaultOdontograma())
   const [tab, setTab] = useState<Tab>('Fichas')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   const fetchAll = useCallback(async () => {
     if (!id) return
     setLoading(true)
-    const [p, c, pr, pa, od, fi] = await Promise.all([
-      supabase.from('pacientes').select('*').eq('id', id).single(),
-      supabase.from('citas').select('*').eq('paciente_id', id).order('fecha', { ascending: false }),
-      supabase.from('procedimientos').select('*').eq('paciente_id', id).order('fecha', { ascending: false }),
-      supabase.from('pagos').select('*').eq('paciente_id', id).order('fecha', { ascending: false }),
-      supabase.from('odontograma').select('*').eq('paciente_id', id),
-      supabase.from('fichas_clinicas').select('*').eq('paciente_id', id).order('fecha', { ascending: false }),
-    ])
-    setPaciente(p.data)
-    setCitas(c.data ?? [])
-    setProcedimientos(pr.data ?? [])
-    setPagos(pa.data ?? [])
-    setFichas(fi.data ?? [])
+    setError('')
+    try {
+      const [p, c, pr, pa, od, fi] = await Promise.all([
+        supabase.from('pacientes').select('*').eq('id', id).single(),
+        supabase.from('citas').select('*').eq('paciente_id', id).order('fecha', { ascending: false }),
+        supabase.from('procedimientos').select('*').eq('paciente_id', id).order('fecha', { ascending: false }),
+        supabase.from('pagos').select('*').eq('paciente_id', id).order('fecha', { ascending: false }),
+        supabase.from('odontograma').select('*').eq('paciente_id', id),
+        supabase.from('fichas_clinicas').select('*').eq('paciente_id', id).order('fecha', { ascending: false }),
+      ])
+      setPaciente(p.data)
+      setCitas(c.data ?? [])
+      setProcedimientos(pr.data ?? [])
+      setPagos(pa.data ?? [])
+      setFichas(fi.data ?? [])
 
-    // Build SVG odontogram from odontograma table
-    const base = getDefaultOdontograma()
-    for (const record of (od.data ?? [])) {
-      if (record.superficies) {
-        const idx = base.findIndex(d => d.numero === record.diente_numero)
-        if (idx >= 0) base[idx] = { numero: record.diente_numero, superficies: record.superficies, notas: record.notas }
+      // Build SVG odontogram from odontograma table
+      const base = getDefaultOdontograma()
+      for (const record of (od.data ?? [])) {
+        if (record.superficies) {
+          const idx = base.findIndex(d => d.numero === record.diente_numero)
+          if (idx >= 0) base[idx] = { numero: record.diente_numero, superficies: record.superficies, notas: record.notas }
+        }
       }
-    }
-    // If latest ficha has odontograma_snapshot, use it for the Odontograma tab
-    if (fi.data && fi.data.length > 0 && fi.data[0].odontograma_snapshot?.length > 0) {
-      const snapBase = getDefaultOdontograma()
-      for (const snap of fi.data[0].odontograma_snapshot) {
-        const idx = snapBase.findIndex(d => d.numero === snap.numero)
-        if (idx >= 0) snapBase[idx] = snap
+      // If latest ficha has odontograma_snapshot, use it for the Odontograma tab
+      if (fi.data && fi.data.length > 0 && fi.data[0].odontograma_snapshot?.length > 0) {
+        const snapBase = getDefaultOdontograma()
+        for (const snap of fi.data[0].odontograma_snapshot) {
+          const idx = snapBase.findIndex(d => d.numero === snap.numero)
+          if (idx >= 0) snapBase[idx] = snap
+        }
+        setDientesSVG(snapBase)
+      } else {
+        setDientesSVG(base)
       }
-      setDientesSVG(snapBase)
-    } else {
-      setDientesSVG(base)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error al cargar los datos del paciente')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }, [id])
 
   useEffect(() => { fetchAll() }, [fetchAll])
@@ -74,6 +85,7 @@ export default function PacienteDetalle() {
   const totalPendiente = pagos.filter(p => p.estado === 'pendiente').reduce((s, p) => s + p.monto, 0)
 
   if (loading) return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-azure border-t-transparent rounded-full animate-spin"/></div>
+  if (error) return <div className="text-center py-20 text-red-500">Error al cargar: {error}</div>
   if (!paciente) return <div className="text-center py-20 text-gray-500">Paciente no encontrado</div>
 
   return (
@@ -88,7 +100,7 @@ export default function PacienteDetalle() {
       {/* Patient header */}
       <div className="bg-gradient-to-r from-deep to-azure rounded-2xl p-6 mb-6 text-white flex items-center gap-5">
         <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-bold font-serif">
-          {paciente.nombre[0]}{paciente.apellido[0]}
+          {paciente.nombre?.[0] ?? '?'}{paciente.apellido?.[0] ?? ''}
         </div>
         <div className="flex-1">
           <h1 className="text-2xl font-bold">{paciente.nombre} {paciente.apellido}</h1>
@@ -127,7 +139,7 @@ export default function PacienteDetalle() {
       {tab === 'Datos' && (
         <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-5 shadow-sm">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {[['Nombre completo', `${paciente.nombre} ${paciente.apellido}`],['Cédula', paciente.cedula],['Fecha de nacimiento', paciente.fecha_nacimiento],['Teléfono', paciente.telefono],['Email', paciente.email],['Dirección', paciente.direccion]].map(([label,val])=>(
+            {[['Nombre completo', `${paciente.nombre} ${paciente.apellido}`],['Cédula', paciente.cedula],['Fecha de nacimiento', paciente.fecha_nacimiento ? formatDate(paciente.fecha_nacimiento) : '—'],['Teléfono', paciente.telefono],['Email', paciente.email],['Dirección', paciente.direccion]].map(([label,val])=>(
               <div key={label}><div className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">{label}</div><div className="text-gray-800 text-sm font-medium">{val || '—'}</div></div>
             ))}
           </div>
@@ -179,7 +191,7 @@ export default function PacienteDetalle() {
                 <div><div className="font-semibold text-gray-800">{pr.tipo}</div>
                   {pr.descripcion && <p className="text-sm text-gray-500 mt-0.5">{pr.descripcion}</p>}
                   <div className="flex gap-3 mt-2 text-xs text-gray-400">
-                    <span>{pr.fecha}</span>
+                    <span>{formatDate(pr.fecha)}</span>
                     <span className={`px-2 py-0.5 rounded-full ${pr.estado==='realizado'?'bg-green-100 text-green-700':pr.estado==='cancelado'?'bg-red-100 text-red-700':'bg-yellow-100 text-yellow-700'}`}>{pr.estado}</span>
                   </div>
                 </div>
@@ -210,7 +222,7 @@ export default function PacienteDetalle() {
                   <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-lg">💳</div>
                   <div className="flex-1">
                     <div className="font-semibold text-gray-800">{pa.metodo_pago}</div>
-                    <div className="text-xs text-gray-400">{pa.fecha} {pa.notas && `· ${pa.notas}`}</div>
+                    <div className="text-xs text-gray-400">{formatDate(pa.fecha)} {pa.notas && `· ${pa.notas}`}</div>
                   </div>
                   <div className="text-right">
                     <div className="font-bold text-lg text-deep">${pa.monto?.toFixed(2)}</div>
