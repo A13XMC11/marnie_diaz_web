@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { DienteOdontograma, SuperficieClave, SimboloOdonto } from '../../types/fichas'
 import ToothSVG from './ToothSVG'
 import { UPPER_PERMANENT, LOWER_PERMANENT, UPPER_BABY, LOWER_BABY, SIMBOLO_LABELS, SUPERFICIE_LABELS, getDefaultDiente } from './odontogramaUtils'
@@ -13,8 +13,6 @@ interface PopoverState {
   visible: boolean
   diente: number | null
   superficie: SuperficieClave | null
-  x: number
-  y: number
 }
 
 // Símbolos agrupados por categoría
@@ -22,25 +20,25 @@ const SIMBOLOS_ROJO: SimboloOdonto[] = ['caries', 'ausente', 'extraccion', 'rest
 const SIMBOLOS_AZUL: SimboloOdonto[] = ['restauracion', 'corona', 'sellante', 'endodoncia']
 
 export default function OdontogramaSVG({ dientes, mode, onDientesChange }: OdontogramaSVGProps) {
-  const [popover, setPopover] = useState<PopoverState>({ visible: false, diente: null, superficie: null, x: 0, y: 0 })
+  const [popover, setPopover] = useState<PopoverState>({ visible: false, diente: null, superficie: null })
   const [selectedDiente, setSelectedDiente] = useState<number | null>(null)
 
   // Build a map of diente by numero for O(1) lookup
   const dienteMap = new Map(dientes.map(d => [d.numero, d]))
 
-  const handleSurfaceClick = (diente: number, superficie: SuperficieClave, event: React.MouseEvent) => {
-    if (mode === 'view') return
+  // Handle keyboard escape to close popover
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && popover.visible) {
+        setPopover({ ...popover, visible: false })
+      }
+    }
 
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
-    setPopover({
-      visible: true,
-      diente,
-      superficie,
-      x: rect.left,
-      y: rect.top,
-    })
-    setSelectedDiente(diente)
-  }
+    if (popover.visible) {
+      window.addEventListener('keydown', handleKeyDown)
+      return () => window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [popover])
 
   const handleSymbolSelect = (simbolo: SimboloOdonto, color: 'rojo' | 'azul' | null) => {
     if (!popover.diente || !popover.superficie) return
@@ -87,13 +85,14 @@ export default function OdontogramaSVG({ dientes, mode, onDientesChange }: Odont
   }
 
   const renderArchRow = (toothNumbers: readonly number[], label: string, isBaby: boolean = false) => {
-    const scale = isBaby ? 0.9 : 1
+    const toothSize = isBaby ? 36 : 40
+    const midpoint = Math.floor(toothNumbers.length / 2)
 
     return (
-      <div key={label} className="flex flex-col items-center mb-4">
+      <div key={label} className="flex flex-col items-center mb-6">
         {/* Arch label */}
         <div style={{
-          fontSize: '10px',
+          fontSize: '9px',
           fontWeight: 600,
           textTransform: 'uppercase',
           letterSpacing: '0.1em',
@@ -101,49 +100,90 @@ export default function OdontogramaSVG({ dientes, mode, onDientesChange }: Odont
           marginBottom: '4px',
         }}>{label}</div>
 
-        {/* Teeth row */}
-        <div className="flex justify-center" style={{ gap: '3px', transform: `scale(${scale})`, transformOrigin: 'top center' }}>
-          {toothNumbers.map(numero => {
-            const diente = dienteMap.get(numero) || getDefaultDiente(numero)
-            return (
-              <div key={numero}>
-                <ToothSVG
-                  numero={numero}
-                  diente={diente}
-                  mode={mode}
-                  isSelected={selectedDiente === numero}
-                  selectedSurface={
-                    popover.visible && popover.diente === numero ? popover.superficie : undefined
-                  }
-                  onSurfaceClick={superficie => {
-                    if (mode === 'edit') {
-                      setSelectedDiente(numero)
-                      setPopover({
-                        visible: true,
-                        diente: numero,
-                        superficie,
-                        x: window.innerWidth / 2 - 144,
-                        y: 100,
-                      })
+        {/* Teeth row with quadrant separator */}
+        <div className="flex justify-center items-center" style={{ gap: '2px' }}>
+          {/* Left quadrant */}
+          <div className="flex" style={{ gap: '2px' }}>
+            {toothNumbers.slice(0, midpoint).map(numero => {
+              const diente = dienteMap.get(numero) || getDefaultDiente(numero)
+              return (
+                <div key={numero}>
+                  <ToothSVG
+                    numero={numero}
+                    diente={diente}
+                    mode={mode}
+                    isSelected={selectedDiente === numero}
+                    selectedSurface={
+                      popover.visible && popover.diente === numero ? popover.superficie : undefined
                     }
-                  }}
-                />
-              </div>
-            )
-          })}
+                    onSurfaceClick={superficie => {
+                      if (mode === 'edit') {
+                        setSelectedDiente(numero)
+                        setPopover({
+                          visible: true,
+                          diente: numero,
+                          superficie,
+                        })
+                      }
+                    }}
+                    toothSize={toothSize}
+                  />
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Quadrant separator */}
+          <div style={{
+            width: '2px',
+            height: `${toothSize * 1.6}px`,
+            background: '#cbd5e1',
+            margin: '0 4px',
+          }} />
+
+          {/* Right quadrant */}
+          <div className="flex" style={{ gap: '2px' }}>
+            {toothNumbers.slice(midpoint).map(numero => {
+              const diente = dienteMap.get(numero) || getDefaultDiente(numero)
+              return (
+                <div key={numero}>
+                  <ToothSVG
+                    numero={numero}
+                    diente={diente}
+                    mode={mode}
+                    isSelected={selectedDiente === numero}
+                    selectedSurface={
+                      popover.visible && popover.diente === numero ? popover.superficie : undefined
+                    }
+                    onSurfaceClick={superficie => {
+                      if (mode === 'edit') {
+                        setSelectedDiente(numero)
+                        setPopover({
+                          visible: true,
+                          diente: numero,
+                          superficie,
+                        })
+                      }
+                    }}
+                    toothSize={toothSize}
+                  />
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="relative w-full" style={{ maxWidth: '720px', margin: '0 auto' }}>
+    <div className="relative w-full" style={{ maxWidth: '100%' }}>
       {/* Odontogram grid */}
       <div style={{
         background: 'white',
         border: '1px solid #e5e7eb',
         borderRadius: '12px',
-        padding: '20px 16px',
+        padding: '24px 20px',
         overflowX: 'auto',
       }}>
         {/* Upper arch */}
@@ -232,22 +272,22 @@ export default function OdontogramaSVG({ dientes, mode, onDientesChange }: Odont
 
       {popover.visible && mode === 'edit' && (
         <div
-          className="fixed bg-white rounded-2xl border border-gray-200 p-5 w-80"
+          className="fixed bg-white rounded-2xl border border-gray-200 p-6 w-80 max-w-[90vw]"
           style={{
-            top: `${popover.y + 10}px`,
-            left: `${Math.min(popover.x + 10, window.innerWidth - 330)}px`,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
             zIndex: 9999,
-            boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+            maxHeight: '90vh',
+            overflowY: 'auto',
           }}
         >
           {/* Header */}
           <div className="mb-5 pb-4 border-b border-gray-100">
             <h3 className="font-serif font-bold text-lg text-deep mb-1">
-              Pieza {popover.diente}
+              Pieza {popover.diente} — {SUPERFICIE_LABELS[popover.superficie as SuperficieClave]}
             </h3>
-            <p className="text-sm text-gray-600">
-              {SUPERFICIE_LABELS[popover.superficie as SuperficieClave]}
-            </p>
           </div>
 
           {/* Patología (Rojo) */}

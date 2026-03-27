@@ -9,6 +9,7 @@ interface ToothSVGProps {
   isSelected: boolean
   selectedSurface?: SuperficieClave | null
   onSurfaceClick?: (superficie: SuperficieClave) => void
+  toothSize?: number
 }
 
 // Polygon coordinates for tooth surfaces (viewBox: 0 0 44 54)
@@ -82,16 +83,17 @@ export default function ToothSVG({
   isSelected,
   selectedSurface,
   onSurfaceClick,
+  toothSize = 40,
 }: ToothSVGProps) {
   const posterior = isPosterior(numero)
   const coords = posterior ? SURFACE_COORDS.posterior : SURFACE_COORDS.anterior
-  const rootTop = posterior ? 34 : 42
+  const rootTop = posterior ? 36 : 42
 
   const [tooltip, setTooltip] = useState<{ visible: boolean; superficie: SuperficieClave | null }>({ visible: false, superficie: null })
 
-  // 80% of original 80x95
-  const svgWidth = 64
-  const svgHeight = 76
+  // Calculate height based on aspect ratio of viewBox (44:62)
+  const svgWidth = toothSize
+  const svgHeight = Math.round(toothSize * (62 / 44))
 
   return (
     <div
@@ -120,7 +122,7 @@ export default function ToothSVG({
       )}
 
       <svg
-        viewBox="0 0 44 54"
+        viewBox="0 0 44 62"
         width={svgWidth}
         height={svgHeight}
         className={`transition-all ${isSelected ? 'ring-2 ring-offset-2 ring-azure drop-shadow-lg scale-105' : 'hover:drop-shadow-md hover:scale-105'} ${
@@ -172,14 +174,21 @@ export default function ToothSVG({
         })}
 
         {/* Root (visual only) */}
-        <rect x="10" y={rootTop} width="24" height="16" fill="none" stroke="#d1d5db" strokeWidth="1" rx="2" />
-        <line x1="22" y1={rootTop} x2="22" y2={rootTop + 16} stroke="#d1d5db" strokeWidth="1" />
-
-        {/* Tooth number label */}
-        <text x="22" y={posterior ? 48 : 52} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1f2937">
-          {numero}
-        </text>
+        <rect x="10" y={rootTop} width="24" height="14" fill="none" stroke="#d1d5db" strokeWidth="1" rx="2" />
+        <line x1="22" y1={rootTop} x2="22" y2={rootTop + 14} stroke="#d1d5db" strokeWidth="1" />
       </svg>
+
+      {/* Tooth number label (outside SVG) */}
+      <div style={{
+        fontSize: '9px',
+        fontWeight: 600,
+        color: '#4b5563',
+        textAlign: 'center',
+        marginTop: '2px',
+        fontVariantNumeric: 'tabular-nums',
+      }}>
+        {numero}
+      </div>
 
       {/* Notes if present */}
       {diente.notas && (
