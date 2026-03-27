@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import OdontogramaSVG from '../../../components/odontograma/OdontogramaSVG'
-import { getDefaultOdontograma } from '../../../components/odontograma/odontogramaUtils'
+import { getDefaultOdontograma, normalizeDientes } from '../../../components/odontograma/odontogramaUtils'
 import type {
   FichaClinica, SignosVitales, ExamenEstomatognatico,
   IndicadoresSaludBucal, DienteOdontograma
@@ -111,7 +111,7 @@ export default function FichaForm() {
             setAntecedentesVisita(data.antecedentes_visita ?? '')
             if (data.signos_vitales) setSignosVitales(data.signos_vitales)
             if (data.examen_estomatognatico) setExamen(data.examen_estomatognatico)
-            if (data.odontograma_snapshot) setDientes(data.odontograma_snapshot)
+            if (data.odontograma_snapshot) setDientes(normalizeDientes(data.odontograma_snapshot))
             if (data.indicadores_salud) setIndicadores(data.indicadores_salud)
             setObservaciones(data.observaciones ?? '')
           }
@@ -127,8 +127,8 @@ export default function FichaForm() {
         .then(({ data, error: dbError }: { data: any[] | null; error: { message: string } | null }) => {
           if (dbError) { setError(dbError.message); return }
           if (data && data.length > 0 && data[0].odontograma_snapshot?.length > 0) {
-            // Use latest ficha's odontogram as starting point for continuity
-            setDientes(data[0].odontograma_snapshot)
+            // Use latest ficha's odontogram as starting point for continuity — normalize to ensure completeness
+            setDientes(normalizeDientes(data[0].odontograma_snapshot))
           } else {
             // Fallback: load from global odontogram table if no previous ficha exists
             supabase.from('odontograma').select('*').eq('paciente_id', pacienteId)
@@ -142,7 +142,8 @@ export default function FichaForm() {
                       if (idx >= 0) base[idx] = { numero: record.diente_numero, superficies: record.superficies, notas: record.notas }
                     }
                   }
-                  setDientes(base)
+                  // Normalize to ensure all surfaces are complete
+                  setDientes(normalizeDientes(base))
                 }
               })
           }

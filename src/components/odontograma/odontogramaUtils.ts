@@ -84,6 +84,29 @@ export function getDefaultOdontograma(): DienteOdontograma[] {
   return ALL_TEETH.map(numero => getDefaultDiente(numero))
 }
 
+// ── Normalize odontogram: ensure all teeth have all 5 surfaces ───────────
+export function normalizeDientes(dientes: DienteOdontograma[]): DienteOdontograma[] {
+  return ALL_TEETH.map(numero => {
+    const existing = dientes.find(d => d.numero === numero)
+    if (!existing) return getDefaultDiente(numero)
+
+    // Ensure all 5 surfaces exist
+    const superficiesCompletas = {
+      mesial: existing.superficies?.mesial ?? { simbolo: 'sano', color: null },
+      distal: existing.superficies?.distal ?? { simbolo: 'sano', color: null },
+      oclusal: existing.superficies?.oclusal ?? { simbolo: 'sano', color: null },
+      vestibular: existing.superficies?.vestibular ?? { simbolo: 'sano', color: null },
+      palatino: existing.superficies?.palatino ?? { simbolo: 'sano', color: null },
+    }
+
+    return {
+      numero,
+      superficies: superficiesCompletas,
+      notas: existing.notas,
+    }
+  })
+}
+
 // ── Get tooth position in grid for layout ──────────────────────────────
 export function getToothPosition(numero: number): { row: 'upper' | 'lower'; arch: 'left' | 'right'; isBaby: boolean } {
   const upper = numero >= 10 && numero < 50
