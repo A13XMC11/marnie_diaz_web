@@ -207,8 +207,8 @@ export default function CitaDetalle() {
   }
 
   const totalProcedimientos = procedimientos.reduce((sum, p) => sum + p.costo, 0)
-  const totalPagos = pagos.reduce((sum, p) => sum + p.monto, 0)
-  const pendiente = Math.max(0, totalProcedimientos - totalPagos)
+  const totalPagos = pagos.filter(p => p.estado === 'pagado').reduce((sum, p) => sum + p.monto, 0)
+  const pendiente = totalProcedimientos - totalPagos
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">

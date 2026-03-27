@@ -84,7 +84,11 @@ export default function FichaForm() {
     ceo: { cariados: 0, perdidos: 0, obturados: 0 },
   })
 
-  // Section 6 — Observaciones
+  // Section 6 — Observaciones y Plan
+  const [diagnostico, setDiagnostico] = useState('')
+  const [planTratamiento, setPlanTratamiento] = useState('')
+  const [instruccionesPaciente, setInstruccionesPaciente] = useState('')
+  const [pronostico, setPronostico] = useState('')
   const [observaciones, setObservaciones] = useState('')
 
   useEffect(() => {
@@ -167,7 +171,8 @@ export default function FichaForm() {
       fecha, motivo_consulta: motivoConsulta, enfermedad_actual: enfermedadActual,
       antecedentes_visita: antecedentesVisita, signos_vitales: signosVitales,
       examen_estomatognatico: examen, odontograma_snapshot: dientes,
-      indicadores_salud: indicadores, observaciones,
+      indicadores_salud: indicadores, diagnostico, plan_tratamiento_texto: planTratamiento,
+      instrucciones_paciente: instruccionesPaciente, pronostico, observaciones,
     }
 
     const { error: dbError } = isNew
@@ -432,17 +437,54 @@ export default function FichaForm() {
           </div>
         </div>
 
-        {/* ── SECCIÓN 6: Observaciones ───────────────────────────── */}
+        {/* ── SECCIÓN 6: Observaciones y Plan ───────────────────────────── */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <SectionHeader number="6" title="Observaciones y Plan de Tratamiento" icon={
             <svg className="w-5 h-5 text-azure" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
             </svg>
           } />
-          <textarea value={observaciones} onChange={e => setObservaciones(e.target.value)} rows={5}
-            placeholder="Diagnóstico, plan de tratamiento, recomendaciones, próxima cita..."
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors resize-none bg-white"
-          />
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Diagnóstico Clínico</label>
+              <textarea value={diagnostico} onChange={e => setDiagnostico(e.target.value)} rows={2}
+                placeholder="Diagnóstico y hallazgos principales..."
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors resize-none bg-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Plan de Tratamiento</label>
+              <textarea value={planTratamiento} onChange={e => setPlanTratamiento(e.target.value)} rows={2}
+                placeholder="Procedimientos planeados y cronograma..."
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors resize-none bg-white"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Pronóstico</label>
+                <select value={pronostico} onChange={e => setPronostico(e.target.value)} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white">
+                  <option value="">Selecciona</option>
+                  <option value="favorable">Favorable</option>
+                  <option value="reservado">Reservado</option>
+                  <option value="desfavorable">Desfavorable</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Instrucciones al Paciente</label>
+                <textarea value={instruccionesPaciente} onChange={e => setInstruccionesPaciente(e.target.value)} rows={1}
+                  placeholder="Cuidados post-tratamiento..."
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors resize-none bg-white"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Observaciones Adicionales</label>
+              <textarea value={observaciones} onChange={e => setObservaciones(e.target.value)} rows={2}
+                placeholder="Notas diversas, seguimiento..."
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors resize-none bg-white"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Bottom actions */}

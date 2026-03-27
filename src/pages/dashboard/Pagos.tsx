@@ -66,7 +66,8 @@ export default function Pagos() {
   )
 
   const totalPagado = filtered.filter(p=>p.estado==='pagado').reduce((s,p)=>s+p.monto,0)
-  const totalPendiente = filtered.filter(p=>p.estado==='pendiente').reduce((s,p)=>s+p.monto,0)
+  const totalPendiente = filtered.filter(p=>p.estado==='pendiente' || p.estado==='parcial').reduce((s,p)=>s+p.monto,0)
+  const totalParcial = filtered.filter(p=>p.estado==='parcial').reduce((s,p)=>s+p.monto,0)
 
   const estadoClasses: Record<string,string> = {
     pagado:'bg-green-100 text-green-700', pendiente:'bg-amber-100 text-amber-700', parcial:'bg-blue-100 text-blue-700'

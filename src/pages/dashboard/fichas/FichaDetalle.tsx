@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { PDFDownloadLink } from '@react-pdf/renderer'
 import { supabase } from '../../../lib/supabase'
 import OdontogramaSVG from '../../../components/odontograma/OdontogramaSVG'
+import FichaPDF from '../../../components/pdf/FichaPDF'
 import { getDefaultOdontograma } from '../../../components/odontograma/odontogramaUtils'
 import type { FichaClinica } from '../../../types/fichas'
 
@@ -36,19 +38,42 @@ function FieldDisplay({ label, value }: { label: string; value: string | number 
   )
 }
 
+interface Paciente {
+  nombre: string
+  apellido: string
+  cedula?: string
+  sexo?: string
+  fecha_nacimiento?: string
+}
+
 export default function FichaDetalle() {
   const { id: pacienteId, fichaId } = useParams()
   const navigate = useNavigate()
   const [ficha, setFicha] = useState<FichaClinica | null>(null)
+  const [paciente, setPaciente] = useState<Paciente | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
     if (!fichaId) return
     supabase.from('fichas_clinicas').select('*').eq('id', fichaId).single()
-      .then(({ data, error: dbError }: { data: FichaClinica | null; error: { message: string } | null }) => {
-        if (dbError) setError(dbError.message)
-        else setFicha(data)
+      .then(async ({ data, error: dbError }: { data: FichaClinica | null; error: { message: string } | null }) => {
+        if (dbError) {
+          setError(dbError.message)
+          setLoading(false)
+          return
+        }
+        setFicha(data)
+
+        // Fetch paciente data
+        if (data?.paciente_id) {
+          const { data: pacData } = await supabase
+            .from('pacientes')
+            .select('nombre, apellido, cedula, sexo, fecha_nacimiento')
+            .eq('id', data.paciente_id)
+            .single()
+          if (pacData) setPaciente(pacData as Paciente)
+        }
         setLoading(false)
       })
       .catch((err: unknown) => {
@@ -114,15 +139,30 @@ export default function FichaDetalle() {
             <h1 className="text-2xl font-serif font-bold text-deep">{ficha.motivo_consulta}</h1>
             <p className="text-sm text-gray-500 mt-0.5 capitalize">{fechaFormatted}</p>
           </div>
-          <Link
-            to={`/dashboard/pacientes/${pacienteId}/fichas/${fichaId}/edit`}
-            className="flex items-center gap-2 border border-azure text-azure hover:bg-azure hover:text-white text-sm font-medium px-4 py-2 rounded-xl transition-all"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487z" />
-            </svg>
-            Editar ficha
-          </Link>
+          <div className="flex gap-2">
+            {paciente && (
+              <PDFDownloadLink
+                document={<FichaPDF ficha={ficha} paciente={paciente} />}
+                fileName={`ficha_${ficha.fecha}.pdf`}
+              >
+                <button className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 hover:bg-green-100 text-sm font-medium px-4 py-2 rounded-xl transition-all">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                  Descargar PDF
+                </button>
+              </PDFDownloadLink>
+            )}
+            <Link
+              to={`/dashboard/pacientes/${pacienteId}/fichas/${fichaId}/edit`}
+              className="flex items-center gap-2 border border-azure text-azure hover:bg-azure hover:text-white text-sm font-medium px-4 py-2 rounded-xl transition-all"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487z" />
+              </svg>
+              Editar ficha
+            </Link>
+          </div>
         </div>
       </div>
 

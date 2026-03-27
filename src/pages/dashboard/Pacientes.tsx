@@ -8,6 +8,9 @@ interface Paciente {
   nombre: string
   apellido: string
   cedula: string
+  sexo: string
+  grupo_sanguineo: string
+  ocupacion: string
   fecha_nacimiento: string
   telefono: string
   email: string
@@ -17,7 +20,7 @@ interface Paciente {
 }
 
 const emptyForm: Omit<Paciente, 'id'> = {
-  nombre: '', apellido: '', cedula: '', fecha_nacimiento: '',
+  nombre: '', apellido: '', cedula: '', sexo: '', grupo_sanguineo: '', ocupacion: '', fecha_nacimiento: '',
   telefono: '', email: '', direccion: '', alergias: '', antecedentes: '',
 }
 
@@ -41,7 +44,7 @@ export default function Pacientes() {
   useEffect(() => { fetchPacientes() }, [fetchPacientes])
 
   const openNew = () => { setEditing(null); setForm(emptyForm); setError(''); setShowModal(true) }
-  const openEdit = (p: Paciente) => { setEditing(p); setForm({ nombre: p.nombre, apellido: p.apellido, cedula: p.cedula, fecha_nacimiento: p.fecha_nacimiento, telefono: p.telefono, email: p.email, direccion: p.direccion, alergias: p.alergias, antecedentes: p.antecedentes }); setError(''); setShowModal(true) }
+  const openEdit = (p: Paciente) => { setEditing(p); setForm({ nombre: p.nombre, apellido: p.apellido, cedula: p.cedula, sexo: p.sexo, grupo_sanguineo: p.grupo_sanguineo, ocupacion: p.ocupacion, fecha_nacimiento: p.fecha_nacimiento, telefono: p.telefono, email: p.email, direccion: p.direccion, alergias: p.alergias, antecedentes: p.antecedentes }); setError(''); setShowModal(true) }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -186,6 +189,11 @@ export default function Pacientes() {
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Cédula</label><input value={form.cedula} onChange={e=>setForm({...form,cedula:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white"/></div>
                 <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Fecha de nacimiento</label><input type="date" value={form.fecha_nacimiento} onChange={e=>setForm({...form,fecha_nacimiento:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white"/></div>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Sexo</label><select value={form.sexo} onChange={e=>setForm({...form,sexo:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white"><option value="">Selecciona</option><option value="masculino">Masculino</option><option value="femenino">Femenino</option><option value="otro">Otro</option></select></div>
+                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Grupo sanguíneo</label><input value={form.grupo_sanguineo} onChange={e=>setForm({...form,grupo_sanguineo:e.target.value})} placeholder="O+, A-, etc." className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white"/></div>
+                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Ocupación</label><input value={form.ocupacion} onChange={e=>setForm({...form,ocupacion:e.target.value})} placeholder="Ej: Contador" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white"/></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Teléfono</label><input value={form.telefono} onChange={e=>setForm({...form,telefono:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white"/></div>

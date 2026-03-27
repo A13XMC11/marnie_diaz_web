@@ -71,6 +71,28 @@ function renderSymbol(
       )
     case 'endodoncia':
       return <line x1={cx} y1={cy - 6} x2={cx} y2={cy + 6} stroke={colors.stroke} strokeWidth="2" />
+    case 'protesis_removible':
+      return (
+        <>
+          <circle cx={cx} cy={cy} r="4" fill="none" stroke={colors.stroke} strokeWidth="1.5" />
+          <text x={cx} y={cy} textAnchor="middle" dy="0.3em" fill={colors.textColor} fontSize="10" fontWeight="bold">P</text>
+        </>
+      )
+    case 'protesis_total':
+      return (
+        <>
+          <rect x={cx - 4} y={cy - 4} width="8" height="8" fill="none" stroke={colors.stroke} strokeWidth="1.5" rx="1" />
+          <text x={cx} y={cy} textAnchor="middle" dy="0.2em" fill={colors.textColor} fontSize="9" fontWeight="bold">PT</text>
+        </>
+      )
+    case 'puente':
+      return (
+        <>
+          <line x1={cx - 5} y1={cy - 3} x2={cx + 5} y2={cy - 3} stroke={colors.stroke} strokeWidth="2" />
+          <line x1={cx - 5} y1={cy - 3} x2={cx - 5} y2={cy + 2} stroke={colors.stroke} strokeWidth="1.5" />
+          <line x1={cx + 5} y1={cy - 3} x2={cx + 5} y2={cy + 2} stroke={colors.stroke} strokeWidth="1.5" />
+        </>
+      )
     default:
       return null
   }

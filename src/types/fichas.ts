@@ -89,6 +89,10 @@ export interface FichaClinica {
   examen_estomatognatico: ExamenEstomatognatico
   odontograma_snapshot: DienteOdontograma[] // snapshot del estado en esa fecha
   indicadores_salud: IndicadoresSaludBucal
-  observaciones: string
+  diagnostico?: string // diagnóstico clínico formal (nuevo campo)
+  plan_tratamiento_texto?: string // descripción del plan de tratamiento (nuevo campo)
+  instrucciones_paciente?: string // cuidados post-tratamiento (nuevo campo)
+  pronostico?: string // pronóstico: reservado/favorable/desfavorable (nuevo campo)
+  observaciones: string // campo legacy que puede incluir notas diversas
   created_at: string
 }
