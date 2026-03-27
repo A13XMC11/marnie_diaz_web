@@ -108,35 +108,45 @@ class MockQueryBuilder {
   }
 
   // Execute (called by await or .then())
-  then(resolve: (result: { data: unknown; error: null }) => void, reject?: (e: unknown) => void) {
-    try {
-      if (this._deleteFlag) {
-        const table = DEMO_DATA[this.table] as AnyObject[]
-        this._filters.forEach(({ col, val }) => {
-          const idx = table.findIndex(r => r[col] === val)
-          if (idx !== -1) table.splice(idx, 1)
-        })
-        resolve({ data: null, error: null })
-        return
+  then(resolve: (result: { data: unknown; error: null }) => void, reject?: (e: unknown) => void): Promise<{data: unknown; error: null}> {
+    return new Promise<{data: unknown; error: null}>((res, rej) => {
+      try {
+        if (this._deleteFlag) {
+          const table = DEMO_DATA[this.table] as AnyObject[]
+          this._filters.forEach(({ col, val }) => {
+            const idx = table.findIndex(r => r[col] === val)
+            if (idx !== -1) table.splice(idx, 1)
+          })
+          const result = { data: null, error: null }
+          resolve(result)
+          return res(result)
+        }
+        if (this._updatePayload) {
+          const table = DEMO_DATA[this.table] as AnyObject[]
+          this._filters.forEach(({ col, val }) => {
+            const row = table.find(r => r[col] === val)
+            if (row) Object.assign(row, this._updatePayload)
+          })
+          const result = { data: null, error: null }
+          resolve(result)
+          return res(result)
+        }
+        if (this._insertPayload) {
+          const newRow = { ...this._insertPayload, id: `demo-${Date.now()}`, created_at: new Date().toISOString() }
+          ;(DEMO_DATA[this.table] as AnyObject[]).push(newRow)
+          const result = { data: newRow, error: null }
+          resolve(result)
+          return res(result)
+        }
+        const rows = this._apply()
+        const result = { data: this._single ? (rows[0] ?? null) : rows, error: null }
+        resolve(result)
+        return res(result)
+      } catch (e) {
+        reject?.(e)
+        rej(e)
       }
-      if (this._updatePayload) {
-        const table = DEMO_DATA[this.table] as AnyObject[]
-        this._filters.forEach(({ col, val }) => {
-          const row = table.find(r => r[col] === val)
-          if (row) Object.assign(row, this._updatePayload)
-        })
-        resolve({ data: null, error: null })
-        return
-      }
-      if (this._insertPayload) {
-        const newRow = { ...this._insertPayload, id: `demo-${Date.now()}`, created_at: new Date().toISOString() }
-        ;(DEMO_DATA[this.table] as AnyObject[]).push(newRow)
-        resolve({ data: newRow, error: null })
-        return
-      }
-      const rows = this._apply()
-      resolve({ data: this._single ? (rows[0] ?? null) : rows, error: null })
-    } catch (e) { reject?.(e) }
+    })
   }
 }
 
