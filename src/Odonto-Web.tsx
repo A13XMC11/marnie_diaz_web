@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import LogoMarnieDiaz from './assets/LogoMarnieDiaz.png';
+import DraHero from "./assets/dra/dra-hero.jpg";
+import DraSobreMi from "./assets/dra/dra-sobre-mi.png";
+import Caso1 from "./assets/galeria/caso1.png";
+import Caso2 from "./assets/galeria/caso2.png";
+import Caso3 from "./assets/galeria/caso3.png";
+import Caso4 from "./assets/galeria/caso4.png";
+import Caso5 from "./assets/galeria/caso5.jpg";
 
 const WA_1 = "https://wa.me/593998862001";
 const WA_2 = "https://wa.me/593998826201";
@@ -91,9 +98,8 @@ export default function MarnieDiaz() {
         .md-stat-label{font-size:.78rem;color:var(--muted);margin-top:.2rem;}
         .md-hero-img-col{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;padding:4vw;animation:fadeIn 1s .3s ease both;}
         .md-hero-card{background:var(--white);border-radius:24px;box-shadow:0 30px 80px rgba(13,61,92,.12);overflow:hidden;max-width:380px;width:100%;border:1px solid rgba(74,168,222,.15);}
-        .md-hero-card-img{width:100%;aspect-ratio:4/5;background:linear-gradient(160deg,var(--ice),var(--accent),var(--sky));display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.7rem;color:var(--azure);opacity:.6;}
-        .md-hero-card-img svg{width:60px;}
-        .md-hero-card-img span{font-size:.78rem;padding:0 1.5rem;text-align:center;}
+        .md-hero-card-img{width:100%;aspect-ratio:4/5;overflow:hidden;}
+        .md-hero-card-img img{width:100%;height:100%;object-fit:cover;display:block;}
         .md-hero-card-info{padding:1.5rem;}
         .md-hero-card-info h3{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:var(--deep);}
         .md-hero-card-info p{font-size:.82rem;color:var(--muted);margin-top:.3rem;}
@@ -123,9 +129,8 @@ export default function MarnieDiaz() {
         /* SOBRE MI */
         .md-sobre{display:grid;grid-template-columns:1fr 1fr;gap:5vw;align-items:center;padding:6rem 5vw;}
         .md-sobre-img-wrap{position:relative;}
-        .md-sobre-img-box{width:100%;aspect-ratio:3/4;border-radius:28px;background:linear-gradient(160deg,var(--ice),var(--accent),var(--sky));display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.7rem;color:var(--azure);opacity:.6;}
-        .md-sobre-img-box svg{width:70px;}
-        .md-sobre-img-box span{font-size:.78rem;text-align:center;padding:0 2rem;}
+        .md-sobre-img-box{width:100%;aspect-ratio:3/4;border-radius:28px;overflow:hidden;}
+        .md-sobre-img-box img{width:100%;height:100%;object-fit:cover;display:block;}
         .md-sobre-deco{position:absolute;top:-20px;right:-20px;width:120px;height:120px;border-radius:50%;border:2px dashed var(--accent);opacity:.5;}
         .md-sobre-badge{position:absolute;bottom:3rem;left:-20px;background:var(--azure);color:var(--white);border-radius:16px;padding:1rem 1.3rem;box-shadow:0 8px 24px rgba(26,111,168,.35);}
         .md-sobre-badge .num{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;line-height:1;}
@@ -205,7 +210,9 @@ export default function MarnieDiaz() {
         .md-footer-desc{font-size:.82rem;color:rgba(255,255,255,.4);margin-top:.6rem;line-height:1.65;}
         .md-footer-col h4{font-size:.72rem;font-weight:500;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;}
         .md-footer-links{display:flex;flex-direction:column;gap:.5rem;}
-        .md-footer-links a{font-size:.83rem;color:rgba(255,255,255,.5);text-decoration:none;transition:color .2s;}
+        .md-footer-links a{font-size:.83rem;color:rgba(255,255,255,.5);text-decoration:none;transition:color .2s;display:flex;align-items:center;gap:8px;}
+        .md-footer-links a svg{flex-shrink:0;}
+        .md-social-btn svg{flex-shrink:0;}
         .md-footer-links a:hover{color:var(--sky);}
         .md-footer-bottom{display:flex;justify-content:space-between;align-items:center;padding:1.5rem 0;flex-wrap:wrap;gap:.8rem;}
         .md-footer-bottom p{font-size:.75rem;color:rgba(255,255,255,.25);}
@@ -252,12 +259,14 @@ export default function MarnieDiaz() {
         .md-ab-label-despues{font-size:11px;font-weight:700;letter-spacing:.05em;color:white;background:#16a34a;padding:.2rem .5rem;border-radius:4px;text-transform:uppercase;line-height:1.4;}
         .md-ab-treatment{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(13,61,92,.92) 0%,transparent 100%);padding:.9rem .8rem .65rem;text-align:center;}
         .md-ab-treatment span{font-size:.78rem;color:var(--white);font-weight:500;}
+        .md-ab-card img{width:100%;height:100%;object-fit:cover;display:block;}
+        .md-ab-card:hover .md-galeria-overlay{opacity:1;}
 
         /* TESTIMONIOS CARRUSEL */
         .md-carousel-wrap{position:relative;overflow:hidden;margin-top:3rem;}
         .md-carousel-track{display:flex;transition:transform .5s ease-in-out;will-change:transform;}
         .md-carousel-slide{flex-shrink:0;padding:0 .75rem;box-sizing:border-box;}
-        .md-carousel-dots{display:flex;justify-content:center;gap:.5rem;margin-top:1.8rem;}
+        .md-carousel-dots{display:flex;justify-content:center;gap:8px;margin-top:1.8rem;padding:16px 0;overflow:visible;width:100%;}
         .md-carousel-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;transition:background .2s,transform .2s;}
         .md-carousel-dot.active{background:var(--azure);transform:scale(1.3);}
         .md-carousel-btn{position:absolute;top:calc(50% - 20px);transform:translateY(-50%);background:var(--white);border:1.5px solid var(--accent);border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;font-size:1.1rem;color:var(--azure);transition:all .2s;box-shadow:0 4px 12px rgba(0,0,0,.1);}
@@ -295,7 +304,8 @@ export default function MarnieDiaz() {
             Iniciar sesión
           </Link>
           <a className="md-mob-cta" href={WA_MSG} target="_blank" rel="noreferrer" onClick={closeMenu}>
-            💬 Reservar por WhatsApp
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white" style={{flexShrink:0}}><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Reservar por WhatsApp
           </a>
         </div>
       )}
@@ -309,7 +319,7 @@ export default function MarnieDiaz() {
           <h1 className="md-hero-h1">Tu sonrisa,<br/>nuestra <em>obra maestra</em></h1>
           <p className="md-hero-sub">Transformamos sonrisas con tratamientos estéticos y rehabilitación oral de última generación, con la calidez y atención personalizada que mereces.</p>
           <div className="md-hero-actions">
-            <a className="md-btn-primary" href={WA_MSG} target="_blank" rel="noreferrer">💬 Reservar cita</a>
+            <a className="md-btn-primary" href={WA_MSG} target="_blank" rel="noreferrer"><svg width="16" height="16" viewBox="0 0 24 24" fill="white" style={{flexShrink:0}}><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Reservar cita</a>
             <a className="md-btn-outline" href="#servicios">Ver servicios</a>
           </div>
           <div className="md-hero-stats">
@@ -321,8 +331,7 @@ export default function MarnieDiaz() {
         <div className="md-hero-img-col">
           <div className="md-hero-card">
             <div className="md-hero-card-img">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-              <span>📸 Foto de la Dra. Marnie Díaz</span>
+              <img src={DraHero} alt="Dra. Marnie Díaz" />
             </div>
             <div className="md-hero-card-info">
               <h3>Dra. Marnie Díaz</h3>
@@ -359,10 +368,9 @@ export default function MarnieDiaz() {
 
       {/* SOBRE MI */}
       <section id="sobre-mi" className="md-sobre">
-        <div className="md-sobre-img-wrap">
+        <div className="md-sobre-img-wrap" style={{maxWidth:'600px',margin:'0 auto'}}>
           <div className="md-sobre-img-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-            <span>📸 Foto de la Dra. Marnie Díaz</span>
+            <img src={DraSobreMi} alt="Dra. Marnie Díaz" style={{width:'100%',height:'780px',objectFit:'cover',objectPosition:'top',borderRadius:'28px'}} />
           </div>
           <div className="md-sobre-deco"/>
           <div className="md-sobre-badge"><div className="num">10+</div><div className="lbl">Años de experiencia</div></div>
@@ -388,8 +396,8 @@ export default function MarnieDiaz() {
             <div className="md-horario-item"><h4>Sábados</h4><p>9:00 am — 3:00 pm</p></div>
           </div>
           <div style={{marginTop:"2rem",display:"flex",gap:"1rem",flexWrap:"wrap"}}>
-            <a className="md-btn-primary" href={WA_MSG} target="_blank" rel="noreferrer">💬 Reservar cita</a>
-            <a className="md-btn-outline" href="tel:+593998862001">📞 Llamar</a>
+            <a className="md-btn-primary" href={WA_MSG} target="_blank" rel="noreferrer"><svg width="16" height="16" viewBox="0 0 24 24" fill="white" style={{flexShrink:0}}><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Reservar cita</a>
+            <a className="md-btn-outline" href="tel:+593998862001"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{flexShrink:0}}><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg> Llamar</a>
           </div>
         </div>
       </section>
@@ -400,50 +408,23 @@ export default function MarnieDiaz() {
         <h2 className="md-section-title">Casos & <em>Transformaciones</em></h2>
         <p className="md-section-sub">Cada sonrisa es una historia única. Síguenos en redes para ver los resultados más recientes.</p>
         <div className="md-galeria-grid">
-          {["Diseño de Sonrisa","Rehabilitación Oral","Prótesis Dental","Endodoncia","Armonía Facial"].map((label) => (
+          {([
+            [Caso1,"Diseño de Sonrisa"],
+            [Caso2,"Rehabilitación Oral"],
+            [Caso3,"Prótesis Dental"],
+            [Caso4,"Endodoncia"],
+            [Caso5,"Armonía Facial"],
+          ] as [string,string][]).map(([src,label]) => (
             <div className="md-ab-card" key={label}>
-              <div className="md-ab-inner">
-                {/* ANTES */}
-                <div className="md-ab-before">
-                  <span className="md-ab-label-antes">ANTES</span>
-                  <div className="md-ab-before-svg">
-                    <svg viewBox="0 0 110 72" style={{width:"88%"}} xmlns="http://www.w3.org/2000/svg">
-                      <rect x="10" y="20" width="20" height="38" rx="7" fill="#c8a882" stroke="#a07850" strokeWidth="1.5"/>
-                      <rect x="36" y="16" width="20" height="42" rx="7" fill="#c8a882" stroke="#a07850" strokeWidth="1.5"/>
-                      <rect x="62" y="16" width="20" height="42" rx="7" fill="#c8a882" stroke="#a07850" strokeWidth="1.5"/>
-                      <rect x="88" y="20" width="18" height="38" rx="7" fill="#c8a882" stroke="#a07850" strokeWidth="1.5"/>
-                      <ellipse cx="22" cy="31" rx="3.5" ry="2.5" fill="#8b6914" opacity="0.65"/>
-                      <ellipse cx="48" cy="37" rx="3" ry="2" fill="#8b6914" opacity="0.65"/>
-                      <ellipse cx="74" cy="28" rx="2.5" ry="2" fill="#8b6914" opacity="0.55"/>
-                      <ellipse cx="96" cy="34" rx="2" ry="1.5" fill="#6b4e10" opacity="0.5"/>
-                    </svg>
-                  </div>
-                </div>
-                {/* DESPUÉS */}
-                <div className="md-ab-after">
-                  <span className="md-ab-label-despues">DESPUÉS</span>
-                  <div className="md-ab-after-svg">
-                    <svg viewBox="0 0 110 72" style={{width:"88%"}} xmlns="http://www.w3.org/2000/svg">
-                      <rect x="10" y="20" width="20" height="38" rx="7" fill="#f0f8ff" stroke="#c5e8fa" strokeWidth="1.5"/>
-                      <rect x="36" y="16" width="20" height="42" rx="7" fill="#f0f8ff" stroke="#c5e8fa" strokeWidth="1.5"/>
-                      <rect x="62" y="16" width="20" height="42" rx="7" fill="#f0f8ff" stroke="#c5e8fa" strokeWidth="1.5"/>
-                      <rect x="88" y="20" width="18" height="38" rx="7" fill="#f0f8ff" stroke="#c5e8fa" strokeWidth="1.5"/>
-                      <rect x="12" y="22" width="8" height="10" rx="4" fill="white" opacity="0.75"/>
-                      <rect x="38" y="18" width="8" height="10" rx="4" fill="white" opacity="0.75"/>
-                      <rect x="64" y="18" width="8" height="10" rx="4" fill="white" opacity="0.75"/>
-                      <rect x="90" y="22" width="7" height="9" rx="3" fill="white" opacity="0.75"/>
-                    </svg>
-                  </div>
-                </div>
+              <img src={src} alt={label} />
+              <div className="md-galeria-overlay">
+                <span>{label} — Antes &amp; Después</span>
               </div>
-              <div className="md-ab-divider"><div className="md-ab-divider-icon">↔</div></div>
-              <div className="md-ab-treatment"><span>{label}</span></div>
             </div>
           ))}
         </div>
         <div className="md-galeria-social">
           {[
-            ["https://www.instagram.com/dentistamarniediaz","@dentistamarniediaz"],
             ["https://www.instagram.com/marniediazec","@marniediazec"],
             ["https://www.facebook.com/DentistaMarnieDiaz","@DentistaMarnieDiaz"],
           ].map(([href,label]) => (
@@ -526,9 +507,18 @@ export default function MarnieDiaz() {
             </div>
           </div>
           <div className="md-social-row">
-            <a className="md-social-btn" href={WA_1} target="_blank" rel="noreferrer">💬 WhatsApp</a>
-            <a className="md-social-btn" href="https://www.instagram.com/dentistamarniediaz" target="_blank" rel="noreferrer">📸 Instagram</a>
-            <a className="md-social-btn" href="https://www.facebook.com/DentistaMarnieDiaz" target="_blank" rel="noreferrer">👍 Facebook</a>
+            <a className="md-social-btn" href={WA_1} target="_blank" rel="noreferrer">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              WhatsApp
+            </a>
+            <a className="md-social-btn" href="https://www.instagram.com/marniediazec" target="_blank" rel="noreferrer">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="url(#ig-grad)"><defs><linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stopColor="#f09433"/><stop offset="50%" stopColor="#e6683c"/><stop offset="75%" stopColor="#dc2743"/><stop offset="100%" stopColor="#cc2366"/></linearGradient></defs><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              Instagram
+            </a>
+            <a className="md-social-btn" href="https://www.facebook.com/DentistaMarnieDiaz" target="_blank" rel="noreferrer">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877f2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              Facebook
+            </a>
           </div>
           <div className="md-mapa-wrap">
             <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.7972!2d-78.5085!3d-0.2105!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sJer%C3%B3nimo+Leiton!5e0!3m2!1ses!2sec!4v1"
@@ -576,10 +566,10 @@ export default function MarnieDiaz() {
           <div className="md-footer-col">
             <h4>Contacto</h4>
             <div className="md-footer-links">
-              <a href={WA_1} target="_blank" rel="noreferrer">📱 099 886 2001</a>
-              <a href={WA_2} target="_blank" rel="noreferrer">📱 099 882 6201</a>
-              <a href="https://www.instagram.com/dentistamarniediaz" target="_blank" rel="noreferrer">📸 @dentistamarniediaz</a>
-              <a href="https://www.facebook.com/DentistaMarnieDiaz" target="_blank" rel="noreferrer">👍 @DentistaMarnieDiaz</a>
+              <a href={WA_1} target="_blank" rel="noreferrer"><svg width="16" height="16" viewBox="0 0 24 24" fill="#4ea8de"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg> 099 886 2001</a>
+              <a href={WA_2} target="_blank" rel="noreferrer"><svg width="16" height="16" viewBox="0 0 24 24" fill="#4ea8de"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg> 099 882 6201</a>
+              <a href="https://www.instagram.com/marniediazec" target="_blank" rel="noreferrer"><svg width="16" height="16" viewBox="0 0 24 24" fill="url(#ig-footer)"><defs><linearGradient id="ig-footer" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stopColor="#f09433"/><stop offset="100%" stopColor="#cc2366"/></linearGradient></defs><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg> @marniediazec</a>
+              <a href="https://www.facebook.com/DentistaMarnieDiaz" target="_blank" rel="noreferrer"><svg width="16" height="16" viewBox="0 0 24 24" fill="#1877f2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> @DentistaMarnieDiaz</a>
             </div>
           </div>
         </div>
