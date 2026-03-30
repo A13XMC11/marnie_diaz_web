@@ -1,6 +1,10 @@
+'use client'
+
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { validateData, citaSchema } from '../../lib/validation'
+import { sanitizeErrorMessage } from '../../lib/security'
 
 interface Cita {
   id: string; paciente_id: string; fecha: string; hora: string
@@ -22,6 +26,7 @@ export default function Citas() {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
   const [filtroEstado, setFiltroEstado] = useState('todos')
 
   const fetchData = useCallback(async () => {
@@ -43,13 +48,33 @@ export default function Citas() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    const { error: dbError } = editing
-      ? await supabase.from('citas').update(form).eq('id', editing.id)
-      : await supabase.from('citas').insert(form)
-    setSaving(false)
-    if (dbError) { setError(dbError.message); return }
-    setShowModal(false)
-    fetchData()
+    setError('')
+    setFieldErrors({})
+
+    // Validar datos con Zod
+    const { valid, data: validatedData, errors: validationErrors } = validateData(citaSchema, form)
+
+    if (!valid) {
+      setFieldErrors(validationErrors || {})
+      setSaving(false)
+      return
+    }
+
+    try {
+      const { error: dbError } = editing
+        ? await supabase.from('citas').update(validatedData).eq('id', editing.id)
+        : await supabase.from('citas').insert(validatedData)
+      setSaving(false)
+      if (dbError) {
+        setError(sanitizeErrorMessage(dbError))
+        return
+      }
+      setShowModal(false)
+      fetchData()
+    } catch (err) {
+      setSaving(false)
+      setError(sanitizeErrorMessage(err))
+    }
   }
 
   const cambiarEstado = async (id: string, estado: string) => {
@@ -148,23 +173,41 @@ export default function Citas() {
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Paciente *</label>
-                <select required value={form.paciente_id} onChange={e=>setForm({...form,paciente_id:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white">
+                <select required value={form.paciente_id} onChange={e=>setForm({...form,paciente_id:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white ${fieldErrors.paciente_id ? 'border-red-300' : 'border-gray-200'}`}>
                   <option value="">Selecciona un paciente</option>
                   {pacientes.map(p => <option key={p.id} value={p.id}>{p.apellido}, {p.nombre}</option>)}
                 </select>
+                {fieldErrors.paciente_id && <p className="text-red-500 text-xs mt-1">{fieldErrors.paciente_id[0]}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Fecha *</label><input type="date" required value={form.fecha} onChange={e=>setForm({...form,fecha:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white [color-scheme:light]"/></div>
-                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Hora *</label><input type="time" required value={form.hora} onChange={e=>setForm({...form,hora:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white [color-scheme:light]"/></div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Fecha *</label>
+                  <input type="date" required value={form.fecha} onChange={e=>setForm({...form,fecha:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white [color-scheme:light] ${fieldErrors.fecha ? 'border-red-300' : 'border-gray-200'}`}/>
+                  {fieldErrors.fecha && <p className="text-red-500 text-xs mt-1">{fieldErrors.fecha[0]}</p>}
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Hora *</label>
+                  <input type="time" required value={form.hora} onChange={e=>setForm({...form,hora:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white [color-scheme:light] ${fieldErrors.hora ? 'border-red-300' : 'border-gray-200'}`}/>
+                  {fieldErrors.hora && <p className="text-red-500 text-xs mt-1">{fieldErrors.hora[0]}</p>}
+                </div>
               </div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Motivo</label><input value={form.motivo} onChange={e=>setForm({...form,motivo:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white" placeholder="Ej: Revisión general, endodoncia..."/></div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Motivo</label>
+                <input value={form.motivo} onChange={e=>setForm({...form,motivo:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white ${fieldErrors.motivo ? 'border-red-300' : 'border-gray-200'}`} placeholder="Ej: Revisión general, endodoncia..."/>
+                {fieldErrors.motivo && <p className="text-red-500 text-xs mt-1">{fieldErrors.motivo[0]}</p>}
+              </div>
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Estado</label>
-                <select value={form.estado} onChange={e=>setForm({...form,estado:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white">
+                <select value={form.estado} onChange={e=>setForm({...form,estado:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white ${fieldErrors.estado ? 'border-red-300' : 'border-gray-200'}`}>
                   {ESTADOS.map(e=><option key={e} value={e}>{e.charAt(0).toUpperCase() + e.slice(1)}</option>)}
                 </select>
+                {fieldErrors.estado && <p className="text-red-500 text-xs mt-1">{fieldErrors.estado[0]}</p>}
               </div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Notas</label><textarea value={form.notas} onChange={e=>setForm({...form,notas:e.target.value})} rows={2} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure resize-none bg-white" placeholder="Observaciones adicionales..."/></div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Notas</label>
+                <textarea value={form.notas} onChange={e=>setForm({...form,notas:e.target.value})} rows={2} className={`w-full border rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure resize-none bg-white ${fieldErrors.notas ? 'border-red-300' : 'border-gray-200'}`} placeholder="Observaciones adicionales..."/>
+                {fieldErrors.notas && <p className="text-red-500 text-xs mt-1">{fieldErrors.notas[0]}</p>}
+              </div>
               {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-gray-200 text-gray-700 py-3 rounded-xl text-sm font-medium hover:bg-gray-50">Cancelar</button>

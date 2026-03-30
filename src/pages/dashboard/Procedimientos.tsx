@@ -1,5 +1,9 @@
+'use client'
+
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
+import { validateData, procedimientoSchema } from '../../lib/validation'
+import { sanitizeErrorMessage } from '../../lib/security'
 
 const formatDate = (dateStr: string) =>
   new Date(dateStr + 'T12:00:00').toLocaleDateString('es-EC', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -23,6 +27,7 @@ export default function Procedimientos() {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
   const [filtroPaciente, setFiltroPaciente] = useState('')
 
   const fetchData = useCallback(async () => {
@@ -44,31 +49,50 @@ export default function Procedimientos() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    const estadoAnterior = editing?.estado
-    const { error: dbError } = editing
-      ? await supabase.from('procedimientos').update(form).eq('id', editing.id)
-      : await supabase.from('procedimientos').insert(form)
-    setSaving(false)
-    if (dbError) { setError(dbError.message); return }
-    // Crear pago pendiente automático:
-    // - Al crear nuevo procedimiento con costo > 0
-    // - Al editar y cambiar estado a "realizado"
-    const debeCrearPago =
-      (!editing && Number(form.costo) > 0) ||
-      (editing && form.estado === 'realizado' && estadoAnterior !== 'realizado')
-    if (debeCrearPago && form.paciente_id) {
-      await supabase.from('pagos').insert({
-        paciente_id: form.paciente_id,
-        cita_id: null,
-        monto: Number(form.costo) || 0,
-        fecha: new Date().toISOString().split('T')[0],
-        metodo_pago: 'efectivo',
-        estado: 'pendiente',
-        notas: `Pago por ${form.tipo}${form.descripcion ? ' - ' + form.descripcion : ''}`,
-      })
+    setError('')
+    setFieldErrors({})
+
+    const { valid, data: validatedData, errors: validationErrors } = validateData(procedimientoSchema, form)
+
+    if (!valid) {
+      setFieldErrors(validationErrors || {})
+      setSaving(false)
+      return
     }
-    setShowModal(false)
-    fetchData()
+
+    try {
+      const estadoAnterior = editing?.estado
+      const { error: dbError } = editing
+        ? await supabase.from('procedimientos').update(validatedData).eq('id', editing.id)
+        : await supabase.from('procedimientos').insert(validatedData)
+      setSaving(false)
+      if (dbError) {
+        setError(sanitizeErrorMessage(dbError))
+        return
+      }
+      // Crear pago pendiente automático:
+      // - Al crear nuevo procedimiento con costo > 0
+      // - Al editar y cambiar estado a "realizado"
+      const debeCrearPago =
+        (!editing && Number(form.costo) > 0) ||
+        (editing && form.estado === 'realizado' && estadoAnterior !== 'realizado')
+      if (debeCrearPago && form.paciente_id) {
+        await supabase.from('pagos').insert({
+          paciente_id: form.paciente_id,
+          cita_id: null,
+          monto: Number(form.costo) || 0,
+          fecha: new Date().toISOString().split('T')[0],
+          metodo_pago: 'efectivo',
+          estado: 'pendiente',
+          notas: `Pago por ${form.tipo}${form.descripcion ? ' - ' + form.descripcion : ''}`,
+        })
+      }
+      setShowModal(false)
+      fetchData()
+    } catch (err) {
+      setSaving(false)
+      setError(sanitizeErrorMessage(err))
+    }
   }
 
   const handleDelete = async (id: string) => {
@@ -154,28 +178,43 @@ export default function Procedimientos() {
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Paciente *</label>
-                <select required value={form.paciente_id} onChange={e=>setForm({...form,paciente_id:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white">
+                <select required value={form.paciente_id} onChange={e=>setForm({...form,paciente_id:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white ${fieldErrors.paciente_id ? 'border-red-300' : 'border-gray-200'}`}>
                   <option value="">Seleccionar paciente</option>
                   {pacientes.map(p=><option key={p.id} value={p.id}>{p.apellido}, {p.nombre}</option>)}
                 </select>
+                {fieldErrors.paciente_id && <p className="text-red-500 text-xs mt-1">{fieldErrors.paciente_id[0]}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Tipo *</label>
-                  <select required value={form.tipo} onChange={e=>setForm({...form,tipo:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white">
+                  <select required value={form.tipo} onChange={e=>setForm({...form,tipo:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white ${fieldErrors.tipo ? 'border-red-300' : 'border-gray-200'}`}>
                     {TIPOS.map(t=><option key={t}>{t}</option>)}
                   </select>
+                  {fieldErrors.tipo && <p className="text-red-500 text-xs mt-1">{fieldErrors.tipo[0]}</p>}
                 </div>
-                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Fecha *</label><input type="date" required value={form.fecha} onChange={e=>setForm({...form,fecha:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white"/></div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Fecha *</label>
+                  <input type="date" required value={form.fecha} onChange={e=>setForm({...form,fecha:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white ${fieldErrors.fecha ? 'border-red-300' : 'border-gray-200'}`}/>
+                  {fieldErrors.fecha && <p className="text-red-500 text-xs mt-1">{fieldErrors.fecha[0]}</p>}
+                </div>
               </div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Descripción</label><textarea value={form.descripcion} onChange={e=>setForm({...form,descripcion:e.target.value})} rows={2} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure resize-none bg-white"/></div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Descripción</label>
+                <textarea value={form.descripcion} onChange={e=>setForm({...form,descripcion:e.target.value})} rows={2} className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure resize-none bg-white ${fieldErrors.descripcion ? 'border-red-300' : 'border-gray-200'}`}/>
+                {fieldErrors.descripcion && <p className="text-red-500 text-xs mt-1">{fieldErrors.descripcion[0]}</p>}
+              </div>
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Costo ($)</label><input type="number" min="0" step="0.01" value={form.costo || ''} onChange={e=>setForm({...form,costo:parseFloat(e.target.value)||0})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white"/></div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Costo ($)</label>
+                  <input type="number" min="0" step="0.01" value={form.costo || ''} onChange={e=>setForm({...form,costo:parseFloat(e.target.value)||0})} className={`w-full border rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white ${fieldErrors.costo ? 'border-red-300' : 'border-gray-200'}`}/>
+                  {fieldErrors.costo && <p className="text-red-500 text-xs mt-1">{fieldErrors.costo[0]}</p>}
+                </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Estado</label>
-                  <select value={form.estado} onChange={e=>setForm({...form,estado:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white">
+                  <select value={form.estado} onChange={e=>setForm({...form,estado:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white ${fieldErrors.estado ? 'border-red-300' : 'border-gray-200'}`}>
                     {['planificado','realizado','cancelado'].map(e=><option key={e}>{e}</option>)}
                   </select>
+                  {fieldErrors.estado && <p className="text-red-500 text-xs mt-1">{fieldErrors.estado[0]}</p>}
                 </div>
               </div>
               {error && <p className="text-red-500 text-xs mt-1">{error}</p>}

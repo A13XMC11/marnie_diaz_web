@@ -1,5 +1,9 @@
+'use client'
+
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
+import { validateData, pagoSchema } from '../../lib/validation'
+import { sanitizeErrorMessage } from '../../lib/security'
 
 const formatDate = (dateStr: string) =>
   new Date(dateStr + 'T12:00:00').toLocaleDateString('es-EC', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -23,6 +27,7 @@ export default function Pagos() {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
   const [filtroPaciente, setFiltroPaciente] = useState('')
   const [filtroEstado, setFiltroEstado] = useState('todos')
 
@@ -45,13 +50,32 @@ export default function Pagos() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    const { error: dbError } = editing
-      ? await supabase.from('pagos').update(form).eq('id', editing.id)
-      : await supabase.from('pagos').insert(form)
-    setSaving(false)
-    if (dbError) { setError(dbError.message); return }
-    setShowModal(false)
-    fetchData()
+    setError('')
+    setFieldErrors({})
+
+    const { valid, data: validatedData, errors: validationErrors } = validateData(pagoSchema, form)
+
+    if (!valid) {
+      setFieldErrors(validationErrors || {})
+      setSaving(false)
+      return
+    }
+
+    try {
+      const { error: dbError } = editing
+        ? await supabase.from('pagos').update(validatedData).eq('id', editing.id)
+        : await supabase.from('pagos').insert(validatedData)
+      setSaving(false)
+      if (dbError) {
+        setError(sanitizeErrorMessage(dbError))
+        return
+      }
+      setShowModal(false)
+      fetchData()
+    } catch (err) {
+      setSaving(false)
+      setError(sanitizeErrorMessage(err))
+    }
   }
 
   const handleDelete = async (id: string) => {
@@ -160,30 +184,45 @@ export default function Pagos() {
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Paciente *</label>
-                <select required value={form.paciente_id} onChange={e=>setForm({...form,paciente_id:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white">
+                <select required value={form.paciente_id} onChange={e=>setForm({...form,paciente_id:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white ${fieldErrors.paciente_id ? 'border-red-300' : 'border-gray-200'}`}>
                   <option value="">Seleccionar paciente</option>
                   {pacientes.map(p=><option key={p.id} value={p.id}>{p.apellido}, {p.nombre}</option>)}
                 </select>
+                {fieldErrors.paciente_id && <p className="text-red-500 text-xs mt-1">{fieldErrors.paciente_id[0]}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Monto ($) *</label><input type="number" min="0" step="0.01" required value={form.monto || ''} onChange={e=>setForm({...form,monto:parseFloat(e.target.value)||0})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white"/></div>
-                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Fecha *</label><input type="date" required value={form.fecha} onChange={e=>setForm({...form,fecha:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white"/></div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Monto ($) *</label>
+                  <input type="number" min="0" step="0.01" required value={form.monto || ''} onChange={e=>setForm({...form,monto:parseFloat(e.target.value)||0})} className={`w-full border rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white ${fieldErrors.monto ? 'border-red-300' : 'border-gray-200'}`}/>
+                  {fieldErrors.monto && <p className="text-red-500 text-xs mt-1">{fieldErrors.monto[0]}</p>}
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Fecha *</label>
+                  <input type="date" required value={form.fecha} onChange={e=>setForm({...form,fecha:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white ${fieldErrors.fecha ? 'border-red-300' : 'border-gray-200'}`}/>
+                  {fieldErrors.fecha && <p className="text-red-500 text-xs mt-1">{fieldErrors.fecha[0]}</p>}
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Método</label>
-                  <select value={form.metodo_pago} onChange={e=>setForm({...form,metodo_pago:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure capitalize bg-white">
+                  <select value={form.metodo_pago} onChange={e=>setForm({...form,metodo_pago:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure capitalize bg-white ${fieldErrors.metodo_pago ? 'border-red-300' : 'border-gray-200'}`}>
                     {METODOS.map(m=><option key={m}>{m}</option>)}
                   </select>
+                  {fieldErrors.metodo_pago && <p className="text-red-500 text-xs mt-1">{fieldErrors.metodo_pago[0]}</p>}
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Estado</label>
-                  <select value={form.estado} onChange={e=>setForm({...form,estado:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white">
+                  <select value={form.estado} onChange={e=>setForm({...form,estado:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white ${fieldErrors.estado ? 'border-red-300' : 'border-gray-200'}`}>
                     {['pagado','pendiente','parcial'].map(e=><option key={e}>{e}</option>)}
                   </select>
+                  {fieldErrors.estado && <p className="text-red-500 text-xs mt-1">{fieldErrors.estado[0]}</p>}
                 </div>
               </div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Notas</label><textarea value={form.notas} onChange={e=>setForm({...form,notas:e.target.value})} rows={2} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure resize-none bg-white" placeholder="Concepto de pago, número de factura..."/></div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Notas</label>
+                <textarea value={form.notas} onChange={e=>setForm({...form,notas:e.target.value})} rows={2} className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure resize-none bg-white ${fieldErrors.notas ? 'border-red-300' : 'border-gray-200'}`} placeholder="Concepto de pago, número de factura..."/>
+                {fieldErrors.notas && <p className="text-red-500 text-xs mt-1">{fieldErrors.notas[0]}</p>}
+              </div>
               {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 border border-gray-200 text-gray-700 py-3 rounded-xl text-sm font-medium hover:bg-gray-50">Cancelar</button>

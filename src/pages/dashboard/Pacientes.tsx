@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { SkeletonRow } from '../../components/SkeletonLoader'
+import { validateData, pacienteSchema } from '../../lib/validation'
+import { sanitizeErrorMessage } from '../../lib/security'
 
 interface Paciente {
   id: string
@@ -33,6 +35,7 @@ export default function Pacientes() {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
 
   const fetchPacientes = useCallback(async () => {
     setLoading(true)
@@ -50,13 +53,33 @@ export default function Pacientes() {
     e.preventDefault()
     setSaving(true)
     setError('')
-    const { error: dbError } = editing
-      ? await supabase.from('pacientes').update(form).eq('id', editing.id)
-      : await supabase.from('pacientes').insert(form)
-    setSaving(false)
-    if (dbError) { setError(dbError.message); return }
-    setShowModal(false)
-    fetchPacientes()
+    setFieldErrors({})
+
+    // Validar datos con Zod
+    const { valid, data: validatedData, errors: validationErrors } = validateData(pacienteSchema, form)
+
+    if (!valid) {
+      setFieldErrors(validationErrors || {})
+      setSaving(false)
+      return
+    }
+
+    try {
+      const { error: dbError } = editing
+        ? await supabase.from('pacientes').update(validatedData).eq('id', editing.id)
+        : await supabase.from('pacientes').insert(validatedData)
+
+      setSaving(false)
+      if (dbError) {
+        setError(sanitizeErrorMessage(dbError))
+        return
+      }
+      setShowModal(false)
+      fetchPacientes()
+    } catch (err) {
+      setSaving(false)
+      setError(sanitizeErrorMessage(err))
+    }
   }
 
   const handleDelete = async (id: string) => {
@@ -183,12 +206,28 @@ export default function Pacientes() {
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Nombre *</label><input required value={form.nombre} onChange={e=>setForm({...form,nombre:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white"/></div>
-                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Apellido *</label><input required value={form.apellido} onChange={e=>setForm({...form,apellido:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white"/></div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Nombre *</label>
+                  <input required value={form.nombre} onChange={e=>setForm({...form,nombre:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white ${fieldErrors.nombre ? 'border-red-300' : 'border-gray-200'}`}/>
+                  {fieldErrors.nombre && <p className="text-red-500 text-xs mt-1">{fieldErrors.nombre[0]}</p>}
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Apellido *</label>
+                  <input required value={form.apellido} onChange={e=>setForm({...form,apellido:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white ${fieldErrors.apellido ? 'border-red-300' : 'border-gray-200'}`}/>
+                  {fieldErrors.apellido && <p className="text-red-500 text-xs mt-1">{fieldErrors.apellido[0]}</p>}
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Cédula</label><input value={form.cedula} onChange={e=>setForm({...form,cedula:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white"/></div>
-                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Fecha de nacimiento</label><input type="date" value={form.fecha_nacimiento} onChange={e=>setForm({...form,fecha_nacimiento:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white [color-scheme:light]"/></div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Cédula</label>
+                  <input value={form.cedula} onChange={e=>setForm({...form,cedula:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white ${fieldErrors.cedula ? 'border-red-300' : 'border-gray-200'}`}/>
+                  {fieldErrors.cedula && <p className="text-red-500 text-xs mt-1">{fieldErrors.cedula[0]}</p>}
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Fecha de nacimiento</label>
+                  <input type="date" value={form.fecha_nacimiento} onChange={e=>setForm({...form,fecha_nacimiento:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white [color-scheme:light] ${fieldErrors.fecha_nacimiento ? 'border-red-300' : 'border-gray-200'}`}/>
+                  {fieldErrors.fecha_nacimiento && <p className="text-red-500 text-xs mt-1">{fieldErrors.fecha_nacimiento[0]}</p>}
+                </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Sexo</label><select value={form.sexo} onChange={e=>setForm({...form,sexo:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white"><option value="">Selecciona</option><option value="masculino">Masculino</option><option value="femenino">Femenino</option><option value="otro">Otro</option></select></div>
@@ -196,8 +235,16 @@ export default function Pacientes() {
                 <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Ocupación</label><input value={form.ocupacion} onChange={e=>setForm({...form,ocupacion:e.target.value})} placeholder="Ej: Contador" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white"/></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Teléfono</label><input value={form.telefono} onChange={e=>setForm({...form,telefono:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white"/></div>
-                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Email</label><input type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white"/></div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Teléfono</label>
+                  <input value={form.telefono} onChange={e=>setForm({...form,telefono:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white ${fieldErrors.telefono ? 'border-red-300' : 'border-gray-200'}`}/>
+                  {fieldErrors.telefono && <p className="text-red-500 text-xs mt-1">{fieldErrors.telefono[0]}</p>}
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Email</label>
+                  <input type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white ${fieldErrors.email ? 'border-red-300' : 'border-gray-200'}`}/>
+                  {fieldErrors.email && <p className="text-red-500 text-xs mt-1">{fieldErrors.email[0]}</p>}
+                </div>
               </div>
               <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Dirección</label><input value={form.direccion} onChange={e=>setForm({...form,direccion:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white"/></div>
               <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">⚠ Alergias</label><textarea value={form.alergias} onChange={e=>setForm({...form,alergias:e.target.value})} rows={2} placeholder="Medicamentos, látex, etc." className="w-full border border-amber-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-amber-400 resize-none bg-white"/></div>

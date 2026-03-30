@@ -1,6 +1,10 @@
+'use client'
+
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
+import { validateData, fichaClinicaSchema } from '../../../lib/validation'
+import { sanitizeErrorMessage } from '../../../lib/security'
 import OdontogramaSVG from '../../../components/odontograma/OdontogramaSVG'
 import { getDefaultOdontograma, normalizeDientes } from '../../../components/odontograma/odontogramaUtils'
 import type {
@@ -53,6 +57,7 @@ export default function FichaForm() {
   const [paciente, setPaciente] = useState<Paciente | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
 
   // Section 1 — Datos de consulta
   const [fecha, setFecha] = useState(fechaFromUrl || new Date().toISOString().split('T')[0])
@@ -162,30 +167,60 @@ export default function FichaForm() {
   }, [pacienteId, fichaId, isNew])
 
   const handleSave = async () => {
-    if (!motivoConsulta.trim()) { setError('El motivo de consulta es obligatorio.'); return }
-    setSaving(true); setError('')
+    setSaving(true)
+    setError('')
+    setFieldErrors({})
 
+    // Build payload for validation
     const payload = {
       paciente_id: pacienteId,
-      cita_id: citaIdFromUrl || null,
-      fecha, motivo_consulta: motivoConsulta, enfermedad_actual: enfermedadActual,
-      antecedentes_visita: antecedentesVisita, signos_vitales: signosVitales,
-      examen_estomatognatico: examen, odontograma_snapshot: dientes,
-      indicadores_salud: indicadores, diagnostico, plan_tratamiento_texto: planTratamiento,
-      instrucciones_paciente: instruccionesPaciente, pronostico, observaciones,
+      fecha,
+      motivo_consulta: motivoConsulta,
+      enfermedad_actual: enfermedadActual,
+      antecedentes_visita: antecedentesVisita,
     }
 
-    const { error: dbError } = isNew
-      ? await supabase.from('fichas_clinicas').insert(payload)
-      : await supabase.from('fichas_clinicas').update(payload).eq('id', fichaId)
+    const { valid, data: validatedData, errors: validationErrors } = validateData(fichaClinicaSchema, payload)
 
-    setSaving(false)
-    if (dbError) { setError('Error al guardar. Intenta de nuevo.'); return }
-    // If opened from CitaDetalle, navigate back to it; otherwise go to patient detail
-    if (citaIdFromUrl) {
-      navigate(`/dashboard/citas/${citaIdFromUrl}`)
-    } else {
-      navigate(`/dashboard/pacientes/${pacienteId}`)
+    if (!valid) {
+      setFieldErrors(validationErrors || {})
+      setSaving(false)
+      return
+    }
+
+    try {
+      const fullPayload = {
+        ...validatedData,
+        cita_id: citaIdFromUrl || null,
+        signos_vitales: signosVitales,
+        examen_estomatognatico: examen,
+        odontograma_snapshot: dientes,
+        indicadores_salud: indicadores,
+        diagnostico,
+        plan_tratamiento_texto: planTratamiento,
+        instrucciones_paciente: instruccionesPaciente,
+        pronostico,
+        observaciones,
+      }
+
+      const { error: dbError } = isNew
+        ? await supabase.from('fichas_clinicas').insert(fullPayload)
+        : await supabase.from('fichas_clinicas').update(fullPayload).eq('id', fichaId)
+
+      setSaving(false)
+      if (dbError) {
+        setError(sanitizeErrorMessage(dbError))
+        return
+      }
+      // If opened from CitaDetalle, navigate back to it; otherwise go to patient detail
+      if (citaIdFromUrl) {
+        navigate(`/dashboard/citas/${citaIdFromUrl}`)
+      } else {
+        navigate(`/dashboard/pacientes/${pacienteId}`)
+      }
+    } catch (err) {
+      setSaving(false)
+      setError(sanitizeErrorMessage(err))
     }
   }
 
@@ -245,7 +280,8 @@ export default function FichaForm() {
             <div>
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Fecha de consulta</label>
               <input type="date" value={fecha} onChange={e => setFecha(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors bg-white" />
+                className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors bg-white ${fieldErrors.fecha ? 'border-red-300' : 'border-gray-200'}`} />
+              {fieldErrors.fecha && <p className="text-red-500 text-xs mt-1">{fieldErrors.fecha[0]}</p>}
             </div>
             <div className="md:col-span-2">
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
@@ -253,7 +289,8 @@ export default function FichaForm() {
               </label>
               <textarea value={motivoConsulta} onChange={e => setMotivoConsulta(e.target.value)} rows={2}
                 placeholder="¿Por qué acude el paciente?" required
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors resize-none bg-white" />
+                className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure transition-colors resize-none bg-white ${fieldErrors.motivo_consulta ? 'border-red-300' : 'border-gray-200'}`} />
+              {fieldErrors.motivo_consulta && <p className="text-red-500 text-xs mt-1">{fieldErrors.motivo_consulta[0]}</p>}
             </div>
             <div className="md:col-span-2">
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Enfermedad o problema actual</label>
