@@ -19,12 +19,50 @@ export default function Login() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) {
-      setError('Credenciales incorrectas. Verifica tu correo y contraseña.')
+
+    // Validate inputs
+    if (!email.trim()) {
+      setError('El correo electrónico es requerido')
       setLoading(false)
-    } else {
-      navigate('/dashboard/pacientes')
+      return
+    }
+
+    if (!password) {
+      setError('La contraseña es requerida')
+      setLoading(false)
+      return
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      setError('Formato de correo electrónico inválido')
+      setLoading(false)
+      return
+    }
+
+    // Check rate limiting
+    const { checkLoginRateLimit, getLoginRateLimitResetTime, clearLoginRateLimit } = await import('../lib/security')
+    if (!checkLoginRateLimit(email)) {
+      const resetTime = getLoginRateLimitResetTime(email)
+      setError(`Demasiados intentos fallidos. Intenta nuevamente en ${resetTime} segundos.`)
+      setLoading(false)
+      return
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        setError('Credenciales incorrectas. Verifica tu correo y contraseña.')
+        setLoading(false)
+      } else {
+        // Clear rate limit on successful login
+        clearLoginRateLimit(email)
+        navigate('/dashboard/pacientes')
+      }
+    } catch (err) {
+      setError('Ocurrió un error. Intenta nuevamente.')
+      setLoading(false)
     }
   }
 
