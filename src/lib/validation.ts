@@ -12,8 +12,8 @@ export const pacienteSchema = z.object({
     const age = new Date().getFullYear() - d.getFullYear()
     return age >= 0 && age <= 150
   }, 'Fecha de nacimiento inválida'),
-  grupo_sanguineo: z.enum(['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-']).optional(),
-  sexo: z.enum(['M', 'F', 'Otro']).optional(),
+  grupo_sanguineo: z.string().optional().or(z.literal('')),
+  sexo: z.enum(['', 'masculino', 'femenino', 'otro']).optional(),
   ocupacion: z.string().max(100).optional(),
   direccion: z.string().max(200).optional(),
   alergias: z.string().max(1000).optional(),
@@ -51,9 +51,9 @@ export const procedimientoSchema = z.object({
     'Ortodoncia',
     'Armonía facial',
     'Otro'
-  ]),
-  descripcion: z.string().min(5).max(500),
-  costo: z.number().positive('Costo debe ser mayor a 0').finite(),
+  ], 'Tipo de procedimiento requerido'),
+  descripcion: z.string().max(500).optional(),
+  costo: z.number().min(0, 'Costo no puede ser negativo').finite().optional(),
   fecha: z.string().refine((date) => !isNaN(Date.parse(date)), 'Fecha inválida'),
   estado: z.enum(['planificado', 'realizado', 'cancelado']).optional(),
 })
@@ -78,12 +78,9 @@ export const fichaClinicaSchema = z.object({
   paciente_id: z.string().uuid('ID de paciente inválido'),
   cita_id: z.string().uuid('ID de cita inválido').optional(),
   fecha: z.string().refine((date) => !isNaN(Date.parse(date)), 'Fecha inválida'),
-  motivo_consulta: z.string().min(5).max(500),
-  diagnostico: z.string().min(5).max(1000),
-  plan_tratamiento_texto: z.string().min(5).max(2000),
-  instrucciones_paciente: z.string().max(1000).optional(),
-  pronostico: z.enum(['favorable', 'reservado', 'desfavorable']),
-  observaciones: z.string().max(1000).optional(),
+  motivo_consulta: z.string().min(5, 'Motivo de consulta requerido').max(500),
+  enfermedad_actual: z.string().max(1000).optional(),
+  antecedentes_visita: z.string().max(2000).optional(),
 })
 
 export type FichaClinicaInput = z.infer<typeof fichaClinicaSchema>
