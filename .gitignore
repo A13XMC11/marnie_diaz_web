@@ -25,3 +25,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.claude/
+CLAUDE.md
+MIGRAR_SCHEMA.md
+SETUP_CHECKLIST.md
+SUPABASE_SETUP.md

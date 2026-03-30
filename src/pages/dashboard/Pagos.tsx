@@ -166,7 +166,7 @@ export default function Pagos() {
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Monto ($) *</label><input type="number" min="0" step="0.01" required value={form.monto} onChange={e=>setForm({...form,monto:parseFloat(e.target.value)||0})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white"/></div>
+                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Monto ($) *</label><input type="number" min="0" step="0.01" required value={form.monto || ''} onChange={e=>setForm({...form,monto:parseFloat(e.target.value)||0})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white"/></div>
                 <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Fecha *</label><input type="date" required value={form.fecha} onChange={e=>setForm({...form,fecha:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white"/></div>
               </div>
               <div className="grid grid-cols-2 gap-4">

@@ -9,7 +9,6 @@ export default function Login() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [remember, setRemember] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -214,40 +213,6 @@ export default function Login() {
               onFocus={e => (e.target.style.borderColor = '#1a6fa8')}
               onBlur={e => (e.target.style.borderColor = '#d1d5db')}
             />
-          </div>
-
-          {/* Fila recordar / olvidé contraseña */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '0',
-          }}>
-            <label style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              color: '#6b7280',
-              fontSize: '13px',
-              cursor: 'pointer',
-              userSelect: 'none',
-            }}>
-              <input
-                type="checkbox"
-                checked={remember}
-                onChange={e => setRemember(e.target.checked)}
-                style={{ accentColor: '#1a6fa8', width: '14px', height: '14px', colorScheme: 'light' }}
-              />
-              Recordar por 30 días
-            </label>
-            <a
-              href="#"
-              style={{ color: '#1a6fa8', fontSize: '13px', textDecoration: 'none' }}
-              onMouseEnter={e => ((e.target as HTMLElement).style.textDecoration = 'underline')}
-              onMouseLeave={e => ((e.target as HTMLElement).style.textDecoration = 'none')}
-            >
-              ¿Olvidaste tu contraseña?
-            </a>
           </div>
 
           {/* Error */}
