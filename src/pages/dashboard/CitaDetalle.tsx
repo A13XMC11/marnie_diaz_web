@@ -75,14 +75,26 @@ export default function CitaDetalle() {
       }
       setCita(citaData as Cita)
 
-      // Fetch linked ficha
+      // Buscar ficha por cita_id
       const { data: fichaData } = await supabase
         .from('fichas_clinicas')
         .select('id, fecha, motivo_consulta')
         .eq('cita_id', citaId)
         .maybeSingle()
 
-      if (fichaData) setFicha(fichaData as Ficha)
+      if (fichaData) {
+        setFicha(fichaData as Ficha)
+      } else {
+        // Fallback: buscar por paciente_id + fecha (fichas creadas desde perfil del paciente)
+        const cita = citaData as Cita
+        const { data: fichaByFecha } = await supabase
+          .from('fichas_clinicas')
+          .select('id, fecha, motivo_consulta')
+          .eq('paciente_id', cita.paciente_id)
+          .eq('fecha', cita.fecha)
+          .maybeSingle()
+        if (fichaByFecha) setFicha(fichaByFecha as Ficha)
+      }
 
       // Fetch procedimientos
       const { data: procData } = await supabase

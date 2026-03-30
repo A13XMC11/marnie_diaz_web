@@ -44,11 +44,29 @@ export default function Procedimientos() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
+    const estadoAnterior = editing?.estado
     const { error: dbError } = editing
       ? await supabase.from('procedimientos').update(form).eq('id', editing.id)
       : await supabase.from('procedimientos').insert(form)
     setSaving(false)
     if (dbError) { setError(dbError.message); return }
+    // Crear pago pendiente automático:
+    // - Al crear nuevo procedimiento con costo > 0
+    // - Al editar y cambiar estado a "realizado"
+    const debeCrearPago =
+      (!editing && Number(form.costo) > 0) ||
+      (editing && form.estado === 'realizado' && estadoAnterior !== 'realizado')
+    if (debeCrearPago && form.paciente_id) {
+      await supabase.from('pagos').insert({
+        paciente_id: form.paciente_id,
+        cita_id: null,
+        monto: Number(form.costo) || 0,
+        fecha: new Date().toISOString().split('T')[0],
+        metodo_pago: 'efectivo',
+        estado: 'pendiente',
+        notas: `Pago por ${form.tipo}${form.descripcion ? ' - ' + form.descripcion : ''}`,
+      })
+    }
     setShowModal(false)
     fetchData()
   }
@@ -152,7 +170,7 @@ export default function Procedimientos() {
               </div>
               <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Descripción</label><textarea value={form.descripcion} onChange={e=>setForm({...form,descripcion:e.target.value})} rows={2} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure resize-none bg-white"/></div>
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Costo ($)</label><input type="number" min="0" step="0.01" value={form.costo} onChange={e=>setForm({...form,costo:parseFloat(e.target.value)||0})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white"/></div>
+                <div><label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Costo ($)</label><input type="number" min="0" step="0.01" value={form.costo || ''} onChange={e=>setForm({...form,costo:parseFloat(e.target.value)||0})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-azure bg-white"/></div>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Estado</label>
                   <select value={form.estado} onChange={e=>setForm({...form,estado:e.target.value})} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-azure bg-white">

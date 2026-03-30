@@ -5,9 +5,37 @@
 
 import { DEMO_DATA, DEMO_USER, DEMO_SESSION } from './mockData'
 
+// ── Persistencia en localStorage ──────────────────────────
+const PERSIST_TABLES = ['pacientes', 'citas', 'procedimientos', 'pagos', 'fichas_clinicas', 'odontograma']
+// Mapeo de nombre de tabla → clave en localStorage
+const PERSIST_KEY_MAP: Record<string, string> = { fichas_clinicas: 'demo_fichas' }
+const getStorageKey = (table: string) => PERSIST_KEY_MAP[table] ?? `demo_${table}`
+
+// Hidrata DEMO_DATA desde localStorage al cargar el módulo
+PERSIST_TABLES.forEach(table => {
+  try {
+    const saved = localStorage.getItem(getStorageKey(table))
+    if (saved) DEMO_DATA[table] = JSON.parse(saved)
+  } catch { /* ignorar */ }
+})
+
+function persistTable(table: string) {
+  try {
+    if (PERSIST_TABLES.includes(table)) {
+      localStorage.setItem(getStorageKey(table), JSON.stringify(DEMO_DATA[table]))
+    }
+  } catch { /* ignorar */ }
+}
+
 const DEMO_EMAIL = 'admin@marniediaz.com'
 const DEMO_PASSWORD = 'demo1234'
-const SESSION_KEY = 'demo_session'
+const SESSION_KEY = 'demo_session_tab'  // sessionStorage only — expires when tab closes
+
+// Clean up any leftover localStorage session keys from previous implementations
+try {
+  localStorage.removeItem('demo_session')
+  localStorage.removeItem('demo_remember')
+} catch { /* ignorar */ }
 
 type AnyObject = Record<string, unknown>
 
@@ -17,23 +45,30 @@ let _currentSession: typeof DEMO_SESSION | null = null
 
 function loadSession() {
   try {
-    const raw = localStorage.getItem(SESSION_KEY)
-    _currentSession = raw ? JSON.parse(raw) : null
+    const raw = sessionStorage.getItem(SESSION_KEY)
+    if (raw) { _currentSession = JSON.parse(raw); return _currentSession }
+    _currentSession = null
   } catch { _currentSession = null }
   return _currentSession
 }
 
 function saveSession(s: typeof DEMO_SESSION | null) {
   _currentSession = s
-  if (s) localStorage.setItem(SESSION_KEY, JSON.stringify(s))
-  else localStorage.removeItem(SESSION_KEY)
+  try {
+    if (s) {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(s))
+    } else {
+      sessionStorage.removeItem(SESSION_KEY)
+    }
+  } catch { /* ignorar */ }
   authListeners.forEach(cb => cb(s ? 'SIGNED_IN' : 'SIGNED_OUT', s))
 }
 
 // ── Query Builder ─────────────────────────────────────────
+type FilterOp = 'eq' | 'neq' | 'gte' | 'lte' | 'lt' | 'gt' | 'in'
 class MockQueryBuilder {
   private table: string
-  private _filters: Array<{ col: string; val: unknown }> = []
+  private _filters: Array<{ col: string; val: unknown; op: FilterOp }> = []
   private _orders: Array<{ col: string; asc: boolean }> = []
   private _limit: number | null = null
   private _single = false
@@ -47,7 +82,37 @@ class MockQueryBuilder {
   select(_cols?: string) { return this }
 
   eq(col: string, val: unknown) {
-    this._filters.push({ col, val })
+    this._filters.push({ col, val, op: 'eq' })
+    return this
+  }
+
+  neq(col: string, val: unknown) {
+    this._filters.push({ col, val, op: 'neq' })
+    return this
+  }
+
+  gte(col: string, val: unknown) {
+    this._filters.push({ col, val, op: 'gte' })
+    return this
+  }
+
+  lte(col: string, val: unknown) {
+    this._filters.push({ col, val, op: 'lte' })
+    return this
+  }
+
+  lt(col: string, val: unknown) {
+    this._filters.push({ col, val, op: 'lt' })
+    return this
+  }
+
+  gt(col: string, val: unknown) {
+    this._filters.push({ col, val, op: 'gt' })
+    return this
+  }
+
+  in(col: string, val: unknown[]) {
+    this._filters.push({ col, val, op: 'in' })
     return this
   }
 
@@ -62,11 +127,24 @@ class MockQueryBuilder {
   }
 
   single() { this._single = true; return this }
+  maybeSingle() { this._single = true; return this }
 
   private _apply(): AnyObject[] {
-    let rows = [...this._data]
-    for (const { col, val } of this._filters) {
-      rows = rows.filter(r => r[col] === val)
+    let rows = [...(DEMO_DATA[this.table] ?? [])] as AnyObject[]
+    for (const { col, val, op } of this._filters) {
+      rows = rows.filter(r => {
+        const rv = r[col]
+        switch (op) {
+          case 'eq':  return rv === val
+          case 'neq': return rv !== val
+          case 'gte': return String(rv) >= String(val)
+          case 'lte': return String(rv) <= String(val)
+          case 'lt':  return String(rv) <  String(val)
+          case 'gt':  return String(rv) >  String(val)
+          case 'in':  return Array.isArray(val) && val.includes(rv)
+          default:    return rv === val
+        }
+      })
     }
     if (this._orders.length > 0) {
       rows.sort((a, b) => {
@@ -80,6 +158,16 @@ class MockQueryBuilder {
       })
     }
     if (this._limit !== null) rows = rows.slice(0, this._limit)
+    // Poblar join de pacientes para filas que tengan paciente_id pero no pacientes
+    if (this.table !== 'pacientes') {
+      const pacientesList = (DEMO_DATA['pacientes'] ?? []) as AnyObject[]
+      rows = rows.map(row => {
+        if (row['pacientes'] || !row['paciente_id']) return row
+        const p = pacientesList.find(p => p['id'] === row['paciente_id'])
+        if (!p) return row
+        return { ...row, pacientes: { nombre: p['nombre'], apellido: p['apellido'], cedula: p['cedula'], alergias: p['alergias'], telefono: p['telefono'], email: p['email'] } }
+      })
+    }
     return rows
   }
 
@@ -94,6 +182,7 @@ class MockQueryBuilder {
       const newRow = { ...row, id: `demo-${Date.now()}-${Math.random().toString(36).slice(2)}`, created_at: new Date().toISOString() }
       ;(DEMO_DATA[this.table] as AnyObject[]).push(newRow)
     })
+    persistTable(this.table)
     return { data: null, error: null }
   }
 
@@ -117,6 +206,7 @@ class MockQueryBuilder {
             const idx = table.findIndex(r => r[col] === val)
             if (idx !== -1) table.splice(idx, 1)
           })
+          persistTable(this.table)
           const result = { data: null, error: null }
           resolve(result)
           return res(result)
@@ -127,6 +217,7 @@ class MockQueryBuilder {
             const row = table.find(r => r[col] === val)
             if (row) Object.assign(row, this._updatePayload)
           })
+          persistTable(this.table)
           const result = { data: null, error: null }
           resolve(result)
           return res(result)
@@ -157,7 +248,7 @@ export const mockSupabase = {
       const session = loadSession()
       return { data: { session }, error: null }
     },
-    signInWithPassword: async ({ email, password }: { email: string; password: string }) => {
+    signInWithPassword: async ({ email, password }: { email: string; password: string; options?: Record<string, unknown> }) => {
       if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
         saveSession(DEMO_SESSION)
         return { data: { session: DEMO_SESSION, user: DEMO_USER }, error: null }

@@ -90,6 +90,7 @@ export default function Dashboard() {
   const [kpis, setKpis] = useState<Record<string, any>>({
     ingresosActual: 0,
     ingresosPrevio: 0,
+    changeIngresos: '0',
     pagosPendientes: 0,
     pacientesConDeuda: 0,
     cpoPromedio: 0,
@@ -126,7 +127,7 @@ export default function Dashboard() {
 
         const ingresosActual = pagosActual?.reduce((sum, p) => sum + (p.monto || 0), 0) || 0
         const ingresosPrevio = pagosPrevio?.reduce((sum, p) => sum + (p.monto || 0), 0) || 0
-        const changeIngresos = ingresosPrevio > 0 ? ((ingresosActual - ingresosPrevio) / ingresosPrevio) * 100 : 0
+        const changeIngresos = ingresosPrevio === 0 ? 0 : ((ingresosActual - ingresosPrevio) / ingresosPrevio) * 100
 
         // 2. Pagos pendientes total (pendiente + parcial)
         const { data: pagosPendientes } = await supabase
@@ -281,7 +282,7 @@ export default function Dashboard() {
           <KPICard
             title="Ingresos del Mes"
             value={`$${kpis.ingresosActual.toLocaleString('es-EC')}`}
-            change={parseFloat(kpis.changeIngresos)}
+            change={parseFloat(kpis.changeIngresos) || 0}
             icon={<DollarIcon />}
             color="green"
           />
