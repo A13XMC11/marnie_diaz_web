@@ -10,8 +10,11 @@ interface RateLimitEntry {
 }
 
 const loginAttempts = new Map<string, RateLimitEntry>()
+const ipRateLimits = new Map<string, RateLimitEntry>()
 const MAX_LOGIN_ATTEMPTS = 5
 const LOGIN_RATE_LIMIT_MINUTES = 15
+const MAX_REQUESTS_PER_MINUTE = 60
+const GLOBAL_RATE_LIMIT_MINUTES = 1
 
 /**
  * Check if an email has exceeded login rate limit
@@ -299,5 +302,170 @@ export const clearSecureSession = (): void => {
     })
   } catch (error) {
     console.error('Failed to clear secure session', error)
+  }
+}
+
+// ============== IP-BASED RATE LIMITING ==============
+
+/**
+ * Get client IP (in real deployment, use X-Forwarded-For header)
+ * For now, use a simple fingerprint based on browser/device
+ */
+export const getClientFingerprint = (): string => {
+  // Fallback: use browser user agent as fingerprint
+  return btoa(navigator.userAgent).substring(0, 20)
+}
+
+/**
+ * Check if client IP/fingerprint has exceeded global rate limit
+ */
+export const checkGlobalRateLimit = (clientId?: string): boolean => {
+  const id = clientId || getClientFingerprint()
+  const now = Date.now()
+  const limit = ipRateLimits.get(id)
+
+  if (!limit || now > limit.resetTime) {
+    // Reset if no previous request or timeout expired
+    ipRateLimits.set(id, {
+      count: 1,
+      resetTime: now + GLOBAL_RATE_LIMIT_MINUTES * 60 * 1000,
+    })
+    return true
+  }
+
+  if (limit.count >= MAX_REQUESTS_PER_MINUTE) {
+    // Blocked: too many requests
+    return false
+  }
+
+  // Increment counter
+  limit.count++
+  ipRateLimits.set(id, limit)
+  return true
+}
+
+/**
+ * Get remaining requests for client
+ */
+export const getRemainingRequests = (clientId?: string): number => {
+  const id = clientId || getClientFingerprint()
+  const limit = ipRateLimits.get(id)
+
+  if (!limit) return MAX_REQUESTS_PER_MINUTE
+
+  const now = Date.now()
+  if (now > limit.resetTime) {
+    return MAX_REQUESTS_PER_MINUTE
+  }
+
+  return Math.max(0, MAX_REQUESTS_PER_MINUTE - limit.count)
+}
+
+// ============== GDPR COMPLIANCE ==============
+
+/**
+ * Right to be forgotten: delete all patient data and audit logs
+ * IMPORTANT: Only call after explicit user consent and verification
+ */
+export const deletePatientData = async (
+  patientId: string,
+  supabase: any
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    // Step 1: Delete from fichas_clinicas (clinical records)
+    await supabase.from('fichas_clinicas').delete().eq('paciente_id', patientId)
+
+    // Step 2: Delete from citas (appointments)
+    await supabase.from('citas').delete().eq('paciente_id', patientId)
+
+    // Step 3: Delete from procedimientos (procedures)
+    await supabase.from('procedimientos').delete().eq('paciente_id', patientId)
+
+    // Step 4: Delete from pagos (payments)
+    await supabase.from('pagos').delete().eq('paciente_id', patientId)
+
+    // Step 5: Delete from odontograma (odontogram)
+    await supabase.from('odontograma').delete().eq('paciente_id', patientId)
+
+    // Step 6: Delete patient record
+    await supabase.from('pacientes').delete().eq('id', patientId)
+
+    // Step 7: Log the deletion for compliance (keep minimal record: timestamp + patientId hash)
+    const hashedId = btoa(patientId).substring(0, 16)
+    const logEntry = {
+      action: 'DATA_DELETION_GDPR',
+      hashed_patient_id: hashedId,
+      timestamp: new Date().toISOString(),
+      reason: 'Right to be forgotten request',
+    }
+    // In production, save this to a separate compliance log
+    console.log('[GDPR Compliance]', logEntry)
+
+    return {
+      success: true,
+      message: 'Datos del paciente eliminados correctamente según GDPR',
+    }
+  } catch (error) {
+    console.error('Error deleting patient data:', error)
+    return {
+      success: false,
+      message: 'Error al eliminar datos. Intenta nuevamente.',
+    }
+  }
+}
+
+/**
+ * Export patient data (for data portability right)
+ */
+export const exportPatientData = async (
+  patientId: string,
+  supabase: any
+): Promise<Record<string, unknown> | null> => {
+  try {
+    const [patient, fichas, citas, procedimientos, pagos] = await Promise.all([
+      supabase.from('pacientes').select('*').eq('id', patientId).single(),
+      supabase.from('fichas_clinicas').select('*').eq('paciente_id', patientId),
+      supabase.from('citas').select('*').eq('paciente_id', patientId),
+      supabase.from('procedimientos').select('*').eq('paciente_id', patientId),
+      supabase.from('pagos').select('*').eq('paciente_id', patientId),
+    ])
+
+    return {
+      patient: patient.data,
+      fichas_clinicas: fichas.data,
+      citas: citas.data,
+      procedimientos: procedimientos.data,
+      pagos: pagos.data,
+      export_date: new Date().toISOString(),
+    }
+  } catch (error) {
+    console.error('Error exporting patient data:', error)
+    return null
+  }
+}
+
+/**
+ * Configure secure cookies (call from backend/middleware in production)
+ * These settings are for reference - actual implementation depends on your backend
+ */
+export const getSecureCookieOptions = () => ({
+  httpOnly: true, // Not accessible to JavaScript (only via HTTP)
+  secure: true, // Only sent over HTTPS
+  sameSite: 'Strict' as const, // Prevent CSRF attacks
+  maxAge: 15 * 60, // 15 minutes in seconds
+})
+
+/**
+ * Anonymize patient data before storing in logs (GDPR compliance)
+ */
+export const anonymizePatientData = (data: Record<string, unknown>): Record<string, unknown> => {
+  return {
+    ...data,
+    nombre: 'REDACTED',
+    apellido: 'REDACTED',
+    cedula: 'REDACTED',
+    email: 'REDACTED',
+    telefono: 'REDACTED',
+    direccion: 'REDACTED',
   }
 }

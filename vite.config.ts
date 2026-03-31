@@ -7,6 +7,8 @@ export default defineConfig({
   server: {
     // Security headers for development
     headers: {
+      // Force HTTPS (HSTS) — 1 year max-age, include subdomains, preload
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
       // Prevent clickjacking attacks
       'X-Frame-Options': 'DENY',
       // Prevent MIME type sniffing
@@ -15,8 +17,10 @@ export default defineConfig({
       'X-XSS-Protection': '1; mode=block',
       // Control referrer information
       'Referrer-Policy': 'strict-origin-when-cross-origin',
-      // Control browser features
-      'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+      // Content Security Policy: strict default, allow specific sources
+      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co; frame-ancestors 'none';",
+      // Control browser features (disable dangerous APIs)
+      'Permissions-Policy': 'geolocation=(), microphone=(), camera=(), payment=()',
       // Allow development server
       'Access-Control-Allow-Origin': 'http://localhost:5173',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
