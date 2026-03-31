@@ -120,8 +120,8 @@ export const clearCsrfToken = (): void => {
 
 const SESSION_TIMEOUT_MINUTES = 15
 const SESSION_WARNING_MINUTES = 14
-let sessionTimeoutId: NodeJS.Timeout | null = null
-let warningTimeoutId: NodeJS.Timeout | null = null
+let sessionTimeoutId: ReturnType<typeof setTimeout> | null = null
+let warningTimeoutId: ReturnType<typeof setTimeout> | null = null
 
 type SessionWarningCallback = (secondsRemaining: number) => void
 type SessionExpireCallback = () => void

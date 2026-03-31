@@ -51,7 +51,7 @@ export const procedimientoSchema = z.object({
     'Ortodoncia',
     'Armonía facial',
     'Otro'
-  ], 'Tipo de procedimiento requerido'),
+  ]).describe('Tipo de procedimiento requerido'),
   descripcion: z.string().max(500).optional(),
   costo: z.number().min(0, 'Costo no puede ser negativo').finite().optional(),
   fecha: z.string().refine((date) => !isNaN(Date.parse(date)), 'Fecha inválida'),

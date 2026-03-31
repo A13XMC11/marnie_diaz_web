@@ -190,7 +190,7 @@ export default function FichaForm() {
 
     try {
       const fullPayload = {
-        ...validatedData,
+        ...((validatedData as Record<string, unknown>) || {}),
         cita_id: citaIdFromUrl || null,
         signos_vitales: signosVitales,
         examen_estomatognatico: examen,
