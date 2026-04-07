@@ -163,6 +163,18 @@ export default function CitaDetalle() {
         return
       }
 
+      if (payload.costo > 0) {
+        await supabase.from('pagos').insert({
+          paciente_id: cita.paciente_id,
+          cita_id: citaId,
+          monto: payload.costo,
+          fecha: payload.fecha,
+          metodo_pago: 'efectivo',
+          estado: 'pendiente',
+          notas: `Pago por ${payload.tipo}${payload.descripcion ? ' - ' + payload.descripcion : ''}`,
+        })
+      }
+
       setShowProcedimientoForm(false)
       fetchData()
     } catch (err) {

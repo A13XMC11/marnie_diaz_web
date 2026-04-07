@@ -116,18 +116,20 @@ export default function Dashboard() {
           .from('pagos')
           .select('monto')
           .eq('estado', 'pagado')
-          .gte('created_at', currentMonth.toISOString())
+          .gte('fecha', currentMonth.toISOString().split('T')[0])
 
         const { data: pagosPrevio } = await supabase
           .from('pagos')
           .select('monto')
           .eq('estado', 'pagado')
-          .gte('created_at', previousMonth.toISOString())
-          .lte('created_at', prevMonthEnd.toISOString())
+          .gte('fecha', previousMonth.toISOString().split('T')[0])
+          .lte('fecha', prevMonthEnd.toISOString().split('T')[0])
 
         const ingresosActual = pagosActual?.reduce((sum, p) => sum + (p.monto || 0), 0) || 0
         const ingresosPrevio = pagosPrevio?.reduce((sum, p) => sum + (p.monto || 0), 0) || 0
-        const changeIngresos = ingresosPrevio === 0 ? 0 : ((ingresosActual - ingresosPrevio) / ingresosPrevio) * 100
+        const changeIngresos = ingresosPrevio === 0
+          ? 0
+          : parseFloat(((ingresosActual - ingresosPrevio) / ingresosPrevio * 100).toFixed(1)) || 0
 
         // 2. Pagos pendientes total (pendiente + parcial)
         const { data: pagosPendientes } = await supabase
@@ -151,7 +153,7 @@ export default function Dashboard() {
         const { data: procedimientosData } = await supabase
           .from('procedimientos')
           .select('tipo, costo')
-          .gte('created_at', currentMonth.toISOString())
+          .gte('fecha', currentMonth.toISOString().split('T')[0])
 
         const procedimientosMap = new Map<string, { count: number; total: number }>()
         procedimientosData?.forEach((p) => {
@@ -187,7 +189,7 @@ export default function Dashboard() {
         const { data: citasData } = await supabase
           .from('citas')
           .select('estado')
-          .gte('created_at', currentMonth.toISOString())
+          .gte('fecha', currentMonth.toISOString().split('T')[0])
 
         const citasEstadoMap = new Map<string, number>()
         citasData?.forEach((c) => {
@@ -236,7 +238,7 @@ export default function Dashboard() {
         setKpis({
           ingresosActual,
           ingresosPrevio,
-          changeIngresos: changeIngresos.toFixed(1),
+          changeIngresos: changeIngresos,
           pagosPendientes: totalPendiente,
           pacientesConDeuda,
           cpoPromedio,
@@ -282,7 +284,7 @@ export default function Dashboard() {
           <KPICard
             title="Ingresos del Mes"
             value={`$${kpis.ingresosActual.toLocaleString('es-EC')}`}
-            change={parseFloat(kpis.changeIngresos) || 0}
+            change={kpis.changeIngresos}
             icon={<DollarIcon />}
             color="green"
           />
