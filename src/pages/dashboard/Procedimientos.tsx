@@ -44,7 +44,20 @@ export default function Procedimientos() {
   useEffect(() => { fetchData() }, [fetchData])
 
   const openNew = () => { setEditing(null); setForm({...emptyForm, fecha: new Date().toISOString().split('T')[0]}); setError(''); setShowModal(true) }
-  const openEdit = (pr: Procedimiento) => { setEditing(pr); setForm({ paciente_id:pr.paciente_id, tipo:pr.tipo, descripcion:pr.descripcion, costo:pr.costo, fecha:pr.fecha, estado:pr.estado }); setError(''); setShowModal(true) }
+  const openEdit = (pr: Procedimiento) => {
+    setEditing(pr)
+    // Resolver paciente_id: primero por ID exacto, luego por nombre si no coincide
+    let pacienteId = pacientes.find(p => p.id === pr.paciente_id)?.id ?? ''
+    if (!pacienteId && pr.pacientes) {
+      pacienteId = pacientes.find(p =>
+        p.nombre === pr.pacientes!.nombre && p.apellido === pr.pacientes!.apellido
+      )?.id ?? ''
+    }
+    setForm({ paciente_id: pacienteId, tipo: pr.tipo, descripcion: pr.descripcion, costo: pr.costo, fecha: pr.fecha, estado: pr.estado })
+    setError('')
+    setFieldErrors({})
+    setShowModal(true)
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()

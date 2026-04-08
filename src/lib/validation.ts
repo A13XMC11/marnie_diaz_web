@@ -36,8 +36,8 @@ export type CitaInput = z.infer<typeof citaSchema>
 
 // Procedimiento validation
 export const procedimientoSchema = z.object({
-  paciente_id: z.string().uuid('ID de paciente inválido'),
-  cita_id: z.string().uuid('ID de cita inválido').optional(),
+  paciente_id: z.string().min(1, 'ID de paciente inválido'),
+  cita_id: z.string().min(1, 'ID de cita inválido').optional(),
   tipo: z.enum([
     'Consulta',
     'Limpieza',
@@ -62,8 +62,8 @@ export type ProcedimientoInput = z.infer<typeof procedimientoSchema>
 
 // Pago validation
 export const pagoSchema = z.object({
-  paciente_id: z.string().uuid('ID de paciente inválido'),
-  cita_id: z.string().uuid('ID de cita inválido').optional(),
+  paciente_id: z.string().min(1, 'ID de paciente inválido'),
+  cita_id: z.string().min(1, 'ID de cita inválido').optional(),
   monto: z.number().positive('Monto debe ser mayor a 0').finite(),
   fecha: z.string().refine((date) => !isNaN(Date.parse(date)), 'Fecha inválida'),
   metodo_pago: z.enum(['efectivo', 'transferencia', 'tarjeta', 'cheque', 'otro']),
