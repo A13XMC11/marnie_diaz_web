@@ -27,6 +27,10 @@ export default function MarnieDiaz() {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  const [formNombre, setFormNombre] = useState('');
+  const [formTelefono, setFormTelefono] = useState('');
+  const [formServicio, setFormServicio] = useState('');
+  const [formMensaje, setFormMensaje] = useState('');
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -528,19 +532,26 @@ export default function MarnieDiaz() {
         <div className="md-contacto-form">
           <h3>Solicitar una cita</h3>
           <div className="md-form-row">
-            <div className="md-form-group"><label>Nombre</label><input type="text" placeholder="Tu nombre completo"/></div>
-            <div className="md-form-group"><label>Teléfono</label><input type="tel" placeholder="099 000 0000"/></div>
+            <div className="md-form-group"><label>Nombre</label><input type="text" placeholder="Tu nombre completo" value={formNombre} onChange={e=>setFormNombre(e.target.value)}/></div>
+            <div className="md-form-group"><label>Teléfono</label><input type="tel" placeholder="099 000 0000" value={formTelefono} onChange={e=>setFormTelefono(e.target.value)}/></div>
           </div>
           <div className="md-form-group"><label>Correo electrónico</label><input type="email" placeholder="tucorreo@email.com"/></div>
           <div className="md-form-group">
             <label>Servicio de interés</label>
-            <select>
+            <select value={formServicio} onChange={e=>setFormServicio(e.target.value)}>
               <option value="">Selecciona un servicio</option>
               {["Odontología Estética","Endodoncia","Rehabilitación Oral","Prótesis Dentales","Odontogeriatría","Armonía Facial","Consulta / Revisión General"].map(s=><option key={s}>{s}</option>)}
             </select>
           </div>
-          <div className="md-form-group"><label>Mensaje</label><textarea placeholder="Cuéntanos en qué podemos ayudarte..."/></div>
-          <button className="md-form-submit" onClick={()=>window.open(WA_MSG,"_blank")}>
+          <div className="md-form-group"><label>Mensaje</label><textarea placeholder="Cuéntanos en qué podemos ayudarte..." value={formMensaje} onChange={e=>setFormMensaje(e.target.value)}/></div>
+          <button className="md-form-submit" onClick={()=>{
+            const partes = ['Hola, me gustaría agendar una cita en Marnie Díaz Odontología.'];
+            if (formNombre) partes.push(`Nombre: ${formNombre}`);
+            if (formTelefono) partes.push(`Teléfono: ${formTelefono}`);
+            if (formServicio) partes.push(`Servicio: ${formServicio}`);
+            if (formMensaje) partes.push(`Mensaje: ${formMensaje}`);
+            window.open(`${WA_1}?text=${encodeURIComponent(partes.join('\n'))}`, '_blank');
+          }}>
             Enviar por WhatsApp →
           </button>
         </div>

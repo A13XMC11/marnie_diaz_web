@@ -51,7 +51,7 @@ export default function FichaForm() {
 
   // Query params from CitaDetalle
   const citaIdFromUrl = searchParams.get('cita_id')
-  const motivoFromUrl = searchParams.get('motivo')
+  const motivoFromUrl = decodeURIComponent(searchParams.get('motivo') || '')
   const fechaFromUrl = searchParams.get('fecha')
 
   const [paciente, setPaciente] = useState<Paciente | null>(null)
@@ -61,7 +61,7 @@ export default function FichaForm() {
 
   // Section 1 — Datos de consulta
   const [fecha, setFecha] = useState(fechaFromUrl || new Date().toISOString().split('T')[0])
-  const [motivoConsulta, setMotivoConsulta] = useState(motivoFromUrl || '')
+  const [motivoConsulta, setMotivoConsulta] = useState(motivoFromUrl)
   const [enfermedadActual, setEnfermedadActual] = useState('')
   const [antecedentesVisita, setAntecedentesVisita] = useState('')
 

@@ -137,10 +137,10 @@ class MockQueryBuilder {
         switch (op) {
           case 'eq':  return rv === val
           case 'neq': return rv !== val
-          case 'gte': return String(rv) >= String(val)
-          case 'lte': return String(rv) <= String(val)
-          case 'lt':  return String(rv) <  String(val)
-          case 'gt':  return String(rv) >  String(val)
+          case 'gte': return rv >= val
+          case 'lte': return rv <= val
+          case 'lt':  return rv <  val
+          case 'gt':  return rv >  val
           case 'in':  return Array.isArray(val) && val.includes(rv)
           default:    return rv === val
         }
@@ -213,12 +213,13 @@ class MockQueryBuilder {
         }
         if (this._updatePayload) {
           const table = DEMO_DATA[this.table] as AnyObject[]
+          const updatedRows: AnyObject[] = []
           this._filters.forEach(({ col, val }) => {
             const row = table.find(r => r[col] === val)
-            if (row) Object.assign(row, this._updatePayload)
+            if (row) { Object.assign(row, this._updatePayload); updatedRows.push(row) }
           })
           persistTable(this.table)
-          const result = { data: null, error: null }
+          const result = { data: updatedRows.length === 1 ? updatedRows[0] : updatedRows, error: null }
           resolve(result)
           return res(result)
         }

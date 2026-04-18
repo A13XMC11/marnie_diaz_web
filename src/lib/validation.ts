@@ -4,14 +4,15 @@ import { z } from 'zod'
 export const pacienteSchema = z.object({
   nombre: z.string().min(2, 'Nombre debe tener al menos 2 caracteres').max(100),
   apellido: z.string().min(2, 'Apellido debe tener al menos 2 caracteres').max(100),
-  cedula: z.string().regex(/^\d{6,15}$/, 'Cédula debe contener solo números (6-15 dígitos)'),
+  cedula: z.string().regex(/^\d{6,15}$/, 'Cédula debe contener solo números (6-15 dígitos)').optional().or(z.literal('')),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
-  telefono: z.string().regex(/^\+?[0-9]{7,15}$/, 'Teléfono inválido (7-15 dígitos)'),
+  telefono: z.string().regex(/^\+?[0-9]{7,15}$/, 'Teléfono inválido (7-15 dígitos)').optional().or(z.literal('')),
   fecha_nacimiento: z.string().refine((date) => {
+    if (!date) return true
     const d = new Date(date)
     const age = new Date().getFullYear() - d.getFullYear()
     return age >= 0 && age <= 150
-  }, 'Fecha de nacimiento inválida'),
+  }, 'Fecha de nacimiento inválida').optional().or(z.literal('')),
   grupo_sanguineo: z.string().optional().or(z.literal('')),
   sexo: z.enum(['', 'masculino', 'femenino', 'otro']).optional(),
   ocupacion: z.string().max(100).optional(),
@@ -24,7 +25,7 @@ export type PacienteInput = z.infer<typeof pacienteSchema>
 
 // Cita validation
 export const citaSchema = z.object({
-  paciente_id: z.string().uuid('ID de paciente inválido'),
+  paciente_id: z.string().min(1, 'ID de paciente inválido'),
   fecha: z.string().refine((date) => !isNaN(Date.parse(date)), 'Fecha inválida'),
   hora: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Hora inválida'),
   motivo: z.string().min(5, 'Motivo debe tener al menos 5 caracteres').max(500),
@@ -75,8 +76,8 @@ export type PagoInput = z.infer<typeof pagoSchema>
 
 // Ficha Clínica validation
 export const fichaClinicaSchema = z.object({
-  paciente_id: z.string().uuid('ID de paciente inválido'),
-  cita_id: z.string().uuid('ID de cita inválido').optional(),
+  paciente_id: z.string().min(1, 'ID de paciente inválido'),
+  cita_id: z.string().min(1, 'ID de cita inválido').optional(),
   fecha: z.string().refine((date) => !isNaN(Date.parse(date)), 'Fecha inválida'),
   motivo_consulta: z.string().min(5, 'Motivo de consulta requerido').max(500),
   enfermedad_actual: z.string().max(1000).optional(),

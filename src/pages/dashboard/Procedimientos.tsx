@@ -9,14 +9,14 @@ const formatDate = (dateStr: string) =>
   new Date(dateStr + 'T12:00:00').toLocaleDateString('es-EC', { day: '2-digit', month: 'short', year: 'numeric' })
 
 interface Procedimiento {
-  id: string; paciente_id: string; tipo: string; descripcion: string
+  id: string; paciente_id: string; cita_id?: string; tipo: string; descripcion: string
   costo: number; fecha: string; estado: string
   pacientes?: { nombre: string; apellido: string }
 }
 interface Paciente { id: string; nombre: string; apellido: string }
 
 const TIPOS = ['Consulta','Limpieza','Endodoncia','Extracción','Blanqueamiento','Carilla','Corona','Prótesis','Implante','Ortodoncia','Armonía facial','Otro']
-const emptyForm = { paciente_id:'', tipo:'Consulta', descripcion:'', costo:0, fecha:new Date().toISOString().split('T')[0], estado:'realizado' }
+const emptyForm = { paciente_id:'', cita_id:'' as string | undefined, tipo:'Consulta', descripcion:'', costo:0, fecha:new Date().toISOString().split('T')[0], estado:'realizado' }
 
 export default function Procedimientos() {
   const [procedimientos, setProcedimientos] = useState<Procedimiento[]>([])
@@ -53,7 +53,7 @@ export default function Procedimientos() {
         p.nombre === pr.pacientes!.nombre && p.apellido === pr.pacientes!.apellido
       )?.id ?? ''
     }
-    setForm({ paciente_id: pacienteId, tipo: pr.tipo, descripcion: pr.descripcion, costo: pr.costo, fecha: pr.fecha, estado: pr.estado })
+    setForm({ paciente_id: pacienteId, cita_id: pr.cita_id, tipo: pr.tipo, descripcion: pr.descripcion, costo: pr.costo, fecha: pr.fecha, estado: pr.estado })
     setError('')
     setFieldErrors({})
     setShowModal(true)
@@ -92,7 +92,7 @@ export default function Procedimientos() {
       if (debeCrearPago && form.paciente_id) {
         await supabase.from('pagos').insert({
           paciente_id: form.paciente_id,
-          cita_id: null,
+          cita_id: form.cita_id || null,
           monto: Number(form.costo) || 0,
           fecha: new Date().toISOString().split('T')[0],
           metodo_pago: 'efectivo',

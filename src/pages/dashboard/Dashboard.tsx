@@ -172,9 +172,9 @@ export default function Dashboard() {
         // 5. CPO promedio de pacientes activos
         const { data: fichas } = await supabase.from('fichas_clinicas').select('indicadores_salud')
 
-        const cpoCariados = fichas?.flatMap((f) => f.indicadores_salud?.cpo?.cariados || 0) || []
-        const cpoPerdidos = fichas?.flatMap((f) => f.indicadores_salud?.cpo?.perdidos || 0) || []
-        const cpoObturados = fichas?.flatMap((f) => f.indicadores_salud?.cpo?.obturados || 0) || []
+        const cpoCariados = fichas?.map((f) => f.indicadores_salud?.cpo?.cariados || 0) || []
+        const cpoPerdidos = fichas?.map((f) => f.indicadores_salud?.cpo?.perdidos || 0) || []
+        const cpoObturados = fichas?.map((f) => f.indicadores_salud?.cpo?.obturados || 0) || []
 
         const cpoPromedio = fichas && fichas.length > 0
           ? (
